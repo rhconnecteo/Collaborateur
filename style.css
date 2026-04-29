@@ -106,7 +106,7 @@ body {
 }
 
 .logo h1 {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 800;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     -webkit-background-clip: text;
@@ -132,6 +132,7 @@ body {
     transition: var(--transition);
     cursor: pointer;
     border: 2px solid transparent;
+    font-size: 13px;
 }
 
 .nav-link:hover {
@@ -189,11 +190,11 @@ body {
 .user-name {
     font-weight: 600;
     color: var(--gray-900);
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .user-role {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--gray-600);
 }
 
@@ -334,14 +335,14 @@ body {
 }
 
 .kpi-value {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     margin-bottom: 2px;
     line-height: 1.1;
 }
 
 .kpi-label {
-    font-size: 9px;
+    font-size: 8px;
     color: var(--gray-600);
     font-weight: 500;
     margin-bottom: 4px;
@@ -545,7 +546,7 @@ body {
     }
 
     .kpi-value {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .kpi-label {
@@ -598,12 +599,14 @@ body {
     }
 
     .data-table {
-        font-size: 12px;
+        font-size: 9px;
     }
 
     .data-table th,
     .data-table td {
-        padding: 8px;
+        padding: 4px 2px;
+        font-size: 8px;
+        word-break: break-word;
     }
 }
 
@@ -659,7 +662,8 @@ body {
     }
 
     .category-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
     }
 
     .kpi-grid {
@@ -676,13 +680,13 @@ body {
     }
 
     .kpi-value {
-        font-size: 14px;
+        font-size: 12px;
         margin-bottom: 1px;
         line-height: 1;
     }
 
     .kpi-label {
-        font-size: 7px;
+        font-size: 6px;
         margin-bottom: 2px;
         line-height: 1.1;
         word-break: break-word;
@@ -746,12 +750,32 @@ body {
     }
 
     .data-table {
-        font-size: 11px;
+        font-size: 7px;
     }
 
     .data-table th,
     .data-table td {
-        padding: 6px 4px;
+        padding: 3px 1px;
+        font-size: 6px;
+        word-break: break-word;
+        max-width: 40px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Show all columns but ultra-small */
+    .data-table th,
+    .data-table td {
+        max-width: 50px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
     }
 
     .pagination {
@@ -791,6 +815,18 @@ body {
         padding: 6px 10px;
         font-size: 11px;
     }
+
+    .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2px;
+    }
+
+    .data-table th,
+    .data-table td {
+        font-size: 5px;
+        padding: 2px 1px;
+        max-width: 35px;
+    }
 }
 
 .stat-panel {
@@ -807,7 +843,7 @@ body {
 }
 
 .panel-header h3 {
-    font-size: 18px;
+    font-size: 15px;
     color: var(--dark);
     font-weight: 700;
 }
@@ -838,6 +874,7 @@ body {
     font-weight: 500;
     color: var(--gray-900);
     flex: 1;
+    font-size: 12px;
 }
 
 .stat-value {
@@ -849,6 +886,7 @@ body {
     min-width: 60px;
     text-align: center;
     font-family: 'Space Mono', monospace;
+    font-size: 12px;
 }
 
 .stat-sub {
@@ -884,7 +922,7 @@ body {
     font-weight: 700;
     color: var(--dark);
     border-bottom: 2px solid var(--gray-300);
-    font-size: 14px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -892,7 +930,7 @@ body {
 .data-table td {
     padding: var(--spacing-md) var(--spacing-lg);
     border-bottom: 1px solid var(--gray-200);
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .data-table tbody tr {
@@ -974,7 +1012,7 @@ body {
     padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 40px;
     border: 2px solid var(--gray-300);
     border-radius: var(--radius-lg);
-    font-size: 14px;
+    font-size: 12px;
     transition: var(--transition);
     font-family: 'Poppins', sans-serif;
 }
@@ -1005,7 +1043,7 @@ body {
     cursor: pointer;
     transition: var(--transition);
     font-family: 'Poppins', sans-serif;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .btn-primary {
@@ -1254,7 +1292,7 @@ body {
 }
 
 .category-title {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--dark);
     margin-bottom: var(--spacing-lg);
