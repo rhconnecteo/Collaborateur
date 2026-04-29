@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>HRFlow - Gestion des Ressources Humaines</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <h1>HRFlow</h1>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Tableau de Bord</span>
+                </a>
+                <a href="#" class="nav-link" data-section="employees">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Employés</span>
+                </a>
+                <a href="#" class="nav-link" data-section="analytics">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Analytique</span>
+                </a>
+                <a href="#" class="nav-link" data-section="search">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Recherche</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info">
+                        <p class="user-name">Admin</p>
+                        <p class="user-role">Administrateur</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <h2 id="page-title">Tableau de Bord</h2>
+                    <p id="page-subtitle">Bienvenue dans votre système de gestion RH</p>
+                </div>
+                <div class="header-right">
+                    <div class="date-time" id="current-datetime"></div>
+                    <button class="btn-icon" id="refresh-btn" title="Actualiser">
+                        🔄
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <!-- KPI Cards - Enhanced -->
+                <div class="kpi-grid-enhanced">
+                    <!-- KPI Category 1: Effectifs -->
+                    <div class="kpi-category">
+                        <div class="category-title">👥 Effectifs</div>
+                        <div class="category-grid">
+                            <div class="kpi-card total">
+                                <div class="kpi-value" id="kpi-total">0</div>
+                                <div class="kpi-label">Total Employés</div>
+                                <div class="kpi-icon">👥</div>
+                            </div>
+                            <div class="kpi-card male">
+                                <div class="kpi-value" id="kpi-male">0</div>
+                                <div class="kpi-label">Hommes</div>
+                                <div class="kpi-icon">👨</div>
+                            </div>
+                            <div class="kpi-card female">
+                                <div class="kpi-value" id="kpi-female">0</div>
+                                <div class="kpi-label">Femmes</div>
+                                <div class="kpi-icon">👩</div>
+                            </div>
+                            <div class="kpi-card ratio">
+                                <div class="kpi-value" id="kpi-ratio">0%</div>
+                                <div class="kpi-label">Ratio H/F</div>
+                                <div class="kpi-icon">⚖️</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Category 2: Organisation -->
+                    <div class="kpi-category">
+                        <div class="category-title">🏢 Organisation</div>
+                        <div class="category-grid">
+                            <div class="kpi-card department">
+                                <div class="kpi-value" id="kpi-department">0</div>
+                                <div class="kpi-label">Départements</div>
+                                <div class="kpi-icon">🏢</div>
+                            </div>
+                            <div class="kpi-card functions">
+                                <div class="kpi-value" id="kpi-functions">0</div>
+                                <div class="kpi-label">Fonctions distinctes</div>
+                                <div class="kpi-icon">💼</div>
+                            </div>
+                            <div class="kpi-card avg-tenure">
+                                <div class="kpi-value" id="kpi-avg-tenure">0 ans</div>
+                                <div class="kpi-label">Ancienneté moyenne</div>
+                                <div class="kpi-icon">📅</div>
+                            </div>
+                            <!-- turnover KPI removed per request -->
+                        </div>
+                    </div>
+
+                    <!-- KPI Category 3: Contrats & Statuts -->
+                    <div class="kpi-category">
+                        <div class="category-title">📋 Contrats & Statuts</div>
+                        <div class="category-grid">
+                            <div class="kpi-card cdi">
+                                <div class="kpi-value" id="kpi-cdi">0</div>
+                                <div class="kpi-label">CDI</div>
+                                <div class="kpi-icon">✅</div>
+                            </div>
+                            <div class="kpi-card cdd">
+                                <div class="kpi-value" id="kpi-cdd">0</div>
+                                <div class="kpi-label">CDD</div>
+                                <div class="kpi-icon">📅</div>
+                            </div>
+                            <div class="kpi-card int-mdj">
+                                <div class="kpi-value" id="kpi-int-mdj">0</div>
+                                <div class="kpi-label">INT MDJ</div>
+                                <div class="kpi-icon">🎯</div>
+                            </div>
+                            <div class="kpi-card stage">
+                                <div class="kpi-value" id="kpi-stage">0</div>
+                                <div class="kpi-label">Stagiaires</div>
+                                <div class="kpi-icon">🎓</div>
+                            </div>
+                            <div class="kpi-card consultant">
+                                <div class="kpi-value" id="kpi-consultant">0</div>
+                                <div class="kpi-label">Consultant</div>
+                                <div class="kpi-icon">🧑‍💼</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Category 4: Âge & Générations -->
+                    <div class="kpi-category">
+                        <div class="category-title">🎂 Générations</div>
+                        <div class="category-grid">
+                            <div class="kpi-card gen-z">
+                                <div class="kpi-value" id="kpi-genz">0</div>
+                                <div class="kpi-label">Génération Z</div>
+                                <div class="kpi-icon">📱</div>
+                            </div>
+                            <div class="kpi-card millennial">
+                                <div class="kpi-value" id="kpi-millennial">0</div>
+                                <div class="kpi-label">Millennials</div>
+                                <div class="kpi-icon">💻</div>
+                            </div>
+                            <div class="kpi-card gen-x">
+                                <div class="kpi-value" id="kpi-genx">0</div>
+                                <div class="kpi-label">Génération X</div>
+                                <div class="kpi-icon">📺</div>
+                            </div>
+                            <div class="kpi-card baby-boomer">
+                                <div class="kpi-value" id="kpi-boomer">0</div>
+                                <div class="kpi-label">Baby Boomers</div>
+                                <div class="kpi-icon">🎸</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="stats-container">
+                    <!-- Statuts -->
+                    <div class="stat-panel stat-panel--statut">
+                        <div class="panel-header">
+                            <h3>📋 Répartition par Statut</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="statut-chart">
+                        </div>
+                        <div id="statut-chart" class="stat-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Rattachement -->
+                    <div class="stat-panel stat-panel--rattach">
+                        <div class="panel-header">
+                            <h3>🏢 Répartition par Rattachement</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="rattach-chart">
+                        </div>
+                        <div id="rattach-chart" class="stat-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Fonction -->
+                    <div class="stat-panel stat-panel--fonction">
+                        <div class="panel-header">
+                            <h3>💼 Fonctions</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="fonction-chart">
+                        </div>
+                        <div id="fonction-chart" class="stat-items fonction-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Sexe -->
+                    <div class="stat-panel stat-panel--sexe">
+                        <div class="panel-header">
+                            <h3>👥 Répartition par Sexe</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="sexe-chart">
+                        </div>
+                        <div id="sexe-chart" class="stat-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Âge -->
+                    <div class="stat-panel stat-panel--age">
+                        <div class="panel-header">
+                            <h3>🎂 Répartition par Âge</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="age-chart">
+                        </div>
+                        <div id="age-chart" class="stat-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <!-- Ancienneté -->
+                    <div class="stat-panel stat-panel--tenure">
+                        <div class="panel-header">
+                            <h3>📅 Ancienneté</h3>
+                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="tenure-chart">
+                        </div>
+                        <div id="tenure-chart" class="stat-items">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+                </div>
+
+
+            </section>
+
+            <!-- Employees Section -->
+            <section id="employees" class="content-section">
+                <div class="filter-bar">
+                    <div class="search-wrapper">
+                        <input type="text" id="search-input" placeholder="Rechercher par nom, matricule, fonction..." class="search-input">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <button class="btn btn-primary" id="search-btn">Rechercher</button>
+                    <button class="btn btn-secondary" id="reset-btn">Réinitialiser</button>
+                </div>
+
+                <div class="table-panel">
+                    <div id="loading-indicator" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Chargement des données...</p>
+                    </div>
+                    <table id="employees-table" class="data-table" style="display: none;">
+                        <thead>
+                            <tr id="table-headers"><tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <p>📭 Aucun employé trouvé</p>
+                    </div>
+                </div>
+
+                <div class="pagination">
+                    <button class="btn btn-outline" id="prev-btn">← Précédent</button>
+                    <span id="page-info">Page 1</span>
+                    <button class="btn btn-outline" id="next-btn">Suivant →</button>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="content-section">
+                <div class="analytics-grid">
+                    <div class="chart-panel">
+                        <h3>Statut par Genre</h3>
+                        <canvas id="status-gender-chart"></canvas>
+                    </div>
+                    <div class="chart-panel">
+                        <h3>Répartition par Département</h3>
+                        <canvas id="dept-chart"></canvas>
+                    </div>
+                    <div class="chart-panel">
+                        <h3>Évolution des effectifs</h3>
+                        <canvas id="evolution-chart"></canvas>
+                    </div>
+                    <div class="chart-panel">
+                        <h3>Pyramide des âges</h3>
+                        <canvas id="age-pyramid"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search Collaborator Section -->
+            <section id="search" class="content-section">
+                <div class="filter-bar">
+                    <div class="search-wrapper">
+                        <input type="text" id="collab-search-input" placeholder="Rechercher un collaborateur (nom, matricule, fonction)..." class="search-input">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <button class="btn btn-primary" id="collab-search-btn">Rechercher</button>
+                    <button class="btn btn-secondary" id="collab-reset-btn">Réinitialiser</button>
+                </div>
+
+                <div class="table-panel">
+                    <table id="collab-table" class="data-table" style="display: none;">
+                        <thead>
+                            <tr id="collab-table-headers"></tr>
+                        </thead>
+                        <tbody id="collab-table-body"></tbody>
+                    </table>
+                    <div id="collab-empty-state" class="empty-state" style="display: none;">
+                        <p>📭 Aucun collaborateur trouvé</p>
+                    </div>
+                    <div id="collab-loading" class="loading-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Recherche en cours...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="employee-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="javascript.js"></script>
+</body>
+</html>
