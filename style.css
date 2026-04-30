@@ -936,17 +936,23 @@ body {
     text-align: left;
     font-weight: 700;
     color: var(--dark);
-    border-bottom: 2px solid var(--gray-300);
+    border-bottom: 2px solid var(--gray-400);
+    border-right: 1px solid var(--gray-300);
     font-size: 12px;
-    text-transform: uppercase;
+    text-transform: lowercase;
     letter-spacing: 0.5px;
 }
 
+.data-table th:last-child { border-right: none; }
+
 .data-table td {
     padding: var(--spacing-md) var(--spacing-lg);
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--gray-300);
+    border-right: 1px solid var(--gray-300);
     font-size: 12px;
 }
+
+.data-table td:last-child { border-right: none; }
 
 .data-table tbody tr {
     transition: var(--transition);
@@ -988,6 +994,102 @@ body {
     .logo-img, .site-logo { width: 28px; height: 28px; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-left h2 { font-size: 16px; }
+
+    /* Make tables horizontally scrollable and reduce padding on very small screens */
+    .data-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        white-space: nowrap;
+        font-size: 11px;
+    }
+
+    .btn-action {
+        padding: 6px;
+        min-width: 40px;
+    }
+    .btn-action-text { display: none; }
+
+    @media (max-width: 425px) {
+        /* Keep table layout horizontal on very small screens.
+           Use horizontal scrolling + ellipsis instead of stacking vertically. */
+        .table-panel { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        .data-table {
+            display: table;
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: separate;
+        }
+
+        .data-table thead { display: table-header-group; }
+        .data-table tbody { display: table-row-group; }
+        .data-table tbody tr { display: table-row; }
+
+        .data-table th,
+        .data-table td {
+            padding: 6px 8px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            font-size: 12px;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        /* Make sure important columns keep a minimum width */
+        .data-table td[data-col="matricule"] { min-width: 90px; font-weight: 700; }
+        .data-table td[data-col="nom-et-prenom"] { min-width: 140px; font-weight: 600; }
+        .data-table td[data-col="fonction"] { min-width: 120px; color: var(--gray-700); }
+
+        .data-table td[data-col="actions"] {
+            text-align: center;
+            min-width: 44px;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        /* Compact layout for very small phones (350-425px) */
+        @media (max-width: 425px) {
+            .data-table th,
+            .data-table td {
+                padding: 4px 6px !important;
+                font-size: 8px !important;
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+            }
+
+            .data-table td[data-col="matricule"] { 
+                min-width: 60px !important; 
+                width: 60px !important;
+            }
+            .data-table td[data-col="nom-et-prenom"] { 
+                min-width: 120px !important; 
+                width: 120px !important;
+                word-break: break-word !important;
+            }
+            .data-table td[data-col="fonction"] { 
+                min-width: 100px !important; 
+                width: 100px !important;
+                word-break: break-word !important;
+            }
+            .data-table td[data-col="actions"] { 
+                min-width: 40px !important;
+                width: 40px !important;
+            }
+
+            .btn-action { padding: 4px !important; font-size: 8px !important; }
+            .btn-action-icon { width: 8px !important; height: 8px !important; }
+            .btn-action-icon svg { width: 8px !important; height: 8px !important; }
+        }
+    }
 }
 
 /* Constrain SVG sizes so they don't overflow their cards */

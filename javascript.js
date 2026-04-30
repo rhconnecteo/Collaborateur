@@ -833,75 +833,66 @@ function displayEmployeesTable() {
     emptyState.style.display = "none";
     
     // En-têtes compacts pour meilleure lisibilité
+    const columns = [
+        { key: "Matricule", label: "matricule" },
+        { key: "Nom et prénoms", label: "nom et prénom" },
+        { key: "Fonction", label: "fonction" }
+    ];
+
+    const normalizeLabel = (s) => s.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+
     tableHeaders.innerHTML = "";
-    const displayHeaders = [
-        "Matricule", 
-        "Nom et prénoms", 
-        "Fonction", 
-        "Niveau"
-    ];
-    
-    const displayNames = [
-        "Matricule",
-        "Nom et prénom",
-        "Fonction",
-        "Niveau"
-    ];
-    
-    displayHeaders.forEach((header, idx) => {
+    columns.forEach((col) => {
         const th = document.createElement("th");
-        th.textContent = displayNames[idx];
+        th.textContent = col.label;
+        th.setAttribute('data-col', normalizeLabel(col.label));
         tableHeaders.appendChild(th);
     });
-    
+
     const actionTh = document.createElement("th");
-    actionTh.textContent = "Actions";
+    actionTh.textContent = "actions";
+    actionTh.setAttribute('data-col', 'actions');
     tableHeaders.appendChild(actionTh);
-    
+
     // Pagination
     const startIdx = (currentPage - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
     const pageEmployees = filteredEmployees.slice(startIdx, endIdx);
-    
+
     // Contenu
     tableBody.innerHTML = "";
     pageEmployees.forEach(emp => {
         const row = document.createElement("tr");
-        
-        displayHeaders.forEach(header => {
+
+        columns.forEach(col => {
             const td = document.createElement("td");
-            let value = emp[header];
-
-            // Fallback to normalized lookup if direct key not present
-            if (value === undefined || value === null || value === "") {
-                value = getFieldValueByNormalizedName(emp, header) || "-";
-            }
-
-            // Pour l'âge, ajouter "ans"
-            if (header === "Age" && value !== "-" && !isNaN(value)) {
-                value = `${value} ans`;
-            }
-
+            const colKey = normalizeLabel(col.label);
+            td.setAttribute('data-col', colKey);
+            let value = getFieldValueByNormalizedName(emp, col.key) || emp[col.key] || "-";
             td.textContent = value;
             row.appendChild(td);
         });
-        
+
         const actionTd = document.createElement("td");
+        actionTd.setAttribute('data-col', 'actions');
+        const matricule = getFieldValueByNormalizedName(emp, "Matricule") || emp["Matricule"] || "";
+        // Always include an accessible icon plus a short text fallback (👁) so
+        // very small screens or font fallbacks still show an eye.
         actionTd.innerHTML = `
-            <button class="btn-action" onclick="viewEmployeeDetails('${emp["Matricule"] || ''}')" aria-label="Voir les détails" title="Voir les détails">
+            <button class="btn-action" onclick="viewEmployeeDetails('${matricule}')" aria-label="Voir les détails" title="Voir les détails">
                 <span class="btn-action-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 </span>
-                <span class="btn-action-text">Voir</span>
+                <span class="btn-action-text" aria-hidden="true">👁</span>
             </button>
         `;
         row.appendChild(actionTd);
         tableBody.appendChild(row);
     });
-    
+
     table.style.display = "table";
     updatePaginationInfo();
 }
@@ -1284,59 +1275,46 @@ function displayCollaboratorsTable(collaborators) {
     
     emptyState.style.display = "none";
     
-    // Colonnes à afficher dans la table (sans les colonnes débordantes)
-    const displayHeaders = [
-        "Matricule",
-        "Nom et prénoms",
-        "Fonction",
-        "Niveau"
+    const columns = [
+        { key: "Matricule", label: "matricule" },
+        { key: "Nom et prénoms", label: "nom et prénom" },
+        { key: "Fonction", label: "fonction" }
     ];
-    
+
+    const normalizeLabel = (s) => s.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+
     // En-têtes
     tableHeaders.innerHTML = "";
-    displayHeaders.forEach((header) => {
+    columns.forEach((col) => {
         const th = document.createElement("th");
-        th.textContent = header;
+        th.textContent = col.label;
+        th.setAttribute('data-col', normalizeLabel(col.label));
         tableHeaders.appendChild(th);
     });
-    
-    // Ajouter colonne Actions
+
     const actionTh = document.createElement("th");
-    actionTh.textContent = "Actions";
+    actionTh.textContent = "actions";
+    actionTh.setAttribute('data-col', 'actions');
     tableHeaders.appendChild(actionTh);
-    
+
     // Contenu
     tableBody.innerHTML = "";
     collaborators.forEach(collab => {
         const row = document.createElement("tr");
-        
-        displayHeaders.forEach(header => {
+
+        columns.forEach(col => {
             const td = document.createElement("td");
-            
-            // Chercher la colonne correspondante (avec ou sans espaces)
-            let value = null;
-            for (const key in collab) {
-                if (key.trim().toLowerCase() === header.toLowerCase()) {
-                    value = collab[key];
-                    break;
-                }
-            }
-            
-            if (value === null || value === undefined) {
-                value = "-";
-            } else {
-                // Formater la date de naissance si elle existe
-                if (header.toLowerCase() === "date de naissance" && value !== "-") {
-                    value = formatDate(value);
-                }
-            }
-            
+            const colKey = normalizeLabel(col.label);
+            td.setAttribute('data-col', colKey);
+
+            let value = getFieldValueByNormalizedName(collab, col.key) || collab[col.key] || "-";
             td.textContent = value;
             row.appendChild(td);
         });
-        
+
         // Ajouter bouton Voir
         const actionTd = document.createElement("td");
+        actionTd.setAttribute('data-col', 'actions');
         const matricule = getFieldValueByNormalizedName(collab, "Matricule") || "";
         actionTd.innerHTML = `
             <button class="btn-action" onclick="viewCollaboratorDetails('${matricule}')" aria-label="Voir les détails" title="Voir les détails">
@@ -1346,13 +1324,12 @@ function displayCollaboratorsTable(collaborators) {
                         <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 </span>
-                <span class="btn-action-text">Voir</span>
             </button>
         `;
         row.appendChild(actionTd);
         tableBody.appendChild(row);
     });
-    
+
     table.style.display = "table";
 }
 
