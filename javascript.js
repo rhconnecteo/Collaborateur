@@ -869,13 +869,18 @@ function displayEmployeesTable() {
         
         displayHeaders.forEach(header => {
             const td = document.createElement("td");
-            let value = emp[header] || "N/A";
-            
+            let value = emp[header];
+
+            // Fallback to normalized lookup if direct key not present
+            if (value === undefined || value === null || value === "") {
+                value = getFieldValueByNormalizedName(emp, header) || "N/A";
+            }
+
             // Pour l'âge, ajouter "ans"
             if (header === "Age" && value !== "N/A" && !isNaN(value)) {
                 value = `${value} ans`;
             }
-            
+
             td.textContent = value;
             row.appendChild(td);
         });
@@ -1070,6 +1075,7 @@ function viewEmployeeDetails(matricule) {
         "Fonction",
         "Statut",
         "Niveau",
+        "Flotte",
         "Numéro collabo.",
         "Mail Collabo.",
         "Nom de manager",
@@ -1118,6 +1124,7 @@ function viewCollaboratorDetails(matricule) {
         "Fonction",
         "Statut",
         "Niveau",
+        "Flotte",
         "Numéro collabo.",
         "Mail Collabo.",
         "Nom de manager",
