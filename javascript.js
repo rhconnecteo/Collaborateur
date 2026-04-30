@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // ========================================
 
 function formatDate(dateString) {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
     
     // Si c'est déjà une date au format YYYY-MM-DD
     if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -113,7 +113,7 @@ function getBirthDateInfo(dateValue) {
         return {
             valid: false,
             iso: null,
-            formatted: "N/A",
+            formatted: "-",
             age: null
         };
     }
@@ -213,7 +213,7 @@ function calculateTenure(dateEmbauche) {
 function getGeneration(age) {
     if (age === null || age === undefined || Number.isNaN(age)) return "Inconnu";
     if (age < 25) return "Génération Z";
-    if (age < 41) return "Millennial";
+    if (age < 41) return "Génération Y";
     if (age < 56) return "Génération X";
     return "Baby Boomer";
 }
@@ -341,8 +341,10 @@ function updatePageHeader(section) {
     };
     
     const data = titles[section] || titles.dashboard;
-    document.getElementById("page-title").textContent = data.title;
-    document.getElementById("page-subtitle").textContent = data.subtitle;
+    const titleEl = document.getElementById("page-title");
+    const subtitleEl = document.getElementById("page-subtitle");
+    if (titleEl) titleEl.textContent = data.title;
+    if (subtitleEl) subtitleEl.textContent = data.subtitle;
 }
 
 // ========================================
@@ -490,7 +492,6 @@ function displayDashboard() {
     displayStatusStatistics();
     displayRattachmentStatistics();
     displayFunctionStatistics();
-    displayGenderStatistics();
     displayAgeStatistics();
     displayTenureStatistics();
 }
@@ -509,8 +510,8 @@ function updateKPIs() {
     
     document.getElementById("kpi-male").textContent = maleCount;
     document.getElementById("kpi-female").textContent = femaleCount;
-    const ratio = femaleCount > 0 ? ((maleCount / femaleCount) * 100).toFixed(1) : (maleCount > 0 ? 100 : 0);
-    document.getElementById("kpi-ratio").textContent = `${ratio}% H/F`;
+    const tauxFeminisation = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
+    document.getElementById("kpi-ratio").textContent = `${tauxFeminisation}%`;
     
     // Organisation
     const rattachements = new Set();
@@ -566,22 +567,22 @@ function updateKPIs() {
     if (intMdjElem) intMdjElem.textContent = statusCounts["INT MDJ"];
     
     // Générations
-    let genZ = 0, millennial = 0, genX = 0, boomer = 0;
+    let genZ = 0, genY = 0, genX = 0, boomer = 0;
     allEmployees.forEach(emp => {
         const birthDateValue = getFieldValueByNormalizedName(emp, "Date de naissance");
         const age = emp["Age"] ?? getBirthDateInfo(birthDateValue).age;
         const gen = getGeneration(age);
         if (gen === "Génération Z") genZ++;
-        else if (gen === "Millennial") millennial++;
+        else if (gen === "Génération Y") genY++;
         else if (gen === "Génération X") genX++;
         else if (gen === "Baby Boomer") boomer++;
     });
 
-    console.log("[HRFlow] KPI générations", { total, genZ, millennial, genX, boomer });
+    console.log("[HRFlow] KPI générations", { total, genZ, genY, genX, boomer });
     console.log("[HRFlow] Statuts détectés", [...new Set(allEmployees.map(emp => getFieldValueByNormalizedName(emp, "Statut")).filter(Boolean))]);
     
     document.getElementById("kpi-genz").textContent = genZ;
-    document.getElementById("kpi-millennial").textContent = millennial;
+    document.getElementById("kpi-millennial").textContent = genY;
     document.getElementById("kpi-genx").textContent = genX;
     document.getElementById("kpi-boomer").textContent = boomer;
 }
@@ -873,11 +874,11 @@ function displayEmployeesTable() {
 
             // Fallback to normalized lookup if direct key not present
             if (value === undefined || value === null || value === "") {
-                value = getFieldValueByNormalizedName(emp, header) || "N/A";
+                value = getFieldValueByNormalizedName(emp, header) || "-";
             }
 
             // Pour l'âge, ajouter "ans"
-            if (header === "Age" && value !== "N/A" && !isNaN(value)) {
+            if (header === "Age" && value !== "-" && !isNaN(value)) {
                 value = `${value} ans`;
             }
 
@@ -1065,7 +1066,7 @@ function viewEmployeeDetails(matricule) {
     
     const modalBody = document.getElementById("modal-body");
     
-    let html = `<h2>${getFieldValueByNormalizedName(employee, "Nom et prénoms") || "N/A"}</h2>`;
+    let html = `<h2>${getFieldValueByNormalizedName(employee, "Nom et prénoms") || "-"}</h2>`;
     html += '<div class="form-grid">';
     
     // Colonnes à afficher
@@ -1084,7 +1085,7 @@ function viewEmployeeDetails(matricule) {
     ];
     
     displayFields.forEach((field) => {
-        let value = getFieldValueByNormalizedName(employee, field) || "N/A";
+        let value = getFieldValueByNormalizedName(employee, field) || "-";
         html += `
             <div class="form-group">
                 <label>${field}</label>
@@ -1114,7 +1115,7 @@ function viewCollaboratorDetails(matricule) {
     
     const modalBody = document.getElementById("modal-body");
     
-    let html = `<h2>${getFieldValueByNormalizedName(collaborator, "Nom et prénoms") || "N/A"}</h2>`;
+    let html = `<h2>${getFieldValueByNormalizedName(collaborator, "Nom et prénoms") || "-"}</h2>`;
     html += '<div class="form-grid">';
     
     // Mêmes colonnes que viewEmployeeDetails
@@ -1133,7 +1134,7 @@ function viewCollaboratorDetails(matricule) {
     ];
     
     displayFields.forEach((field) => {
-        let value = getFieldValueByNormalizedName(collaborator, field) || "N/A";
+        let value = getFieldValueByNormalizedName(collaborator, field) || "-";
         html += `
             <div class="form-group">
                 <label>${field}</label>
@@ -1322,10 +1323,10 @@ function displayCollaboratorsTable(collaborators) {
             }
             
             if (value === null || value === undefined) {
-                value = "N/A";
+                value = "-";
             } else {
                 // Formater la date de naissance si elle existe
-                if (header.toLowerCase() === "date de naissance" && value !== "N/A") {
+                if (header.toLowerCase() === "date de naissance" && value !== "-") {
                     value = formatDate(value);
                 }
             }

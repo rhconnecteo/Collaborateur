@@ -105,8 +105,21 @@ body {
     stroke-width: 2;
 }
 
+.logo-img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.site-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin-right: 12px;
+}
+
 .logo h1 {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 800;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     -webkit-background-clip: text;
@@ -234,7 +247,7 @@ body {
     width: 44px;
     height: 44px;
     border: none;
-    background: var(--gray-100);
+    background: transparent;
     border-radius: var(--radius-lg);
     cursor: pointer;
     font-size: 18px;
@@ -945,9 +958,9 @@ body {
 
 .btn-action {
     padding: 6px 12px;
-    background: var(--primary);
-    color: white;
-    border: none;
+    background: transparent;
+    color: #111;
+    border: 1px solid var(--gray-300);
     border-radius: var(--radius-md);
     cursor: pointer;
     font-size: 12px;
@@ -956,8 +969,77 @@ body {
 }
 
 .btn-action:hover {
-    background: var(--primary-dark);
+    background: var(--gray-100);
 }
+
+/* Force SVG icons to monochrome */
+.nav-icon, .kpi-icon-svg, .panel-icon {
+    color: #111;
+    stroke: #111;
+    fill: none;
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+    .logo-img, .site-logo { width: 32px; height: 32px; }
+}
+
+@media (max-width: 480px) {
+    .logo-img, .site-logo { width: 28px; height: 28px; }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-left h2 { font-size: 16px; }
+}
+
+/* Constrain SVG sizes so they don't overflow their cards */
+.nav-icon {
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+}
+.nav-icon svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.kpi-icon svg, .kpi-icon-svg {
+    width: 28px;
+    height: 28px;
+    max-width: 40%;
+    max-height: 40%;
+    display: block;
+}
+
+.panel-icon, .category-title svg {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* Sidebar icons smaller and vertical center */
+.sidebar .nav-icon { width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; }
+.sidebar .nav-icon svg { width: 20px; height: 20px; display:block; }
+
+@media (max-width: 768px) {
+    .sidebar .nav-icon { width: 36px; height: 36px; }
+    .sidebar .nav-icon svg { width: 18px; height: 18px; }
+}
+
+@media (max-width: 480px) {
+    .sidebar .nav-icon { width: 32px; height: 32px; }
+    .sidebar .nav-icon svg { width: 16px; height: 16px; }
+}
+
+/* Ensure KPI cards keep icons top-right but not oversized */
+.kpi-category .kpi-icon { align-self: flex-end; opacity: 0.12; }
 
 /* ========================================
    RECENT EMPLOYEES
@@ -1488,7 +1570,7 @@ canvas {
 
 /* Responsive design handled by comprehensive media queries */
 
-/* Compact mobile mode for small phones like 320px width */
+/* Compact mobile mode for small phones — target: 425x546 (replace 320px) */
 @media (max-width: 390px) {
     body {
         font-size: 12px;
@@ -1701,7 +1783,7 @@ canvas {
     }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 425px) and (max-height: 546px) {
     .sidebar {
         padding: 6px;
     }

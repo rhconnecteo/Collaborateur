@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>HRFlow - Gestion des Ressources Humaines</title>
+    <title>Population - Gestion des Ressources Humaines</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,27 +13,22 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <h1>HRFlow</h1>
+                    <img src="logo.png" alt="Population" class="logo-img">
+                    <h1>Population</h1>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
                 <a href="#" class="nav-link active" data-section="dashboard">
-                    <span class="nav-icon">📊</span>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 13v6"/><path d="M12 9v10"/><path d="M17 5v14"/></svg>
                     <span class="nav-text">Tableau de Bord</span>
                 </a>
                 <a href="#" class="nav-link" data-section="employees">
-                    <span class="nav-icon">👥</span>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     <span class="nav-text">Employés</span>
                 </a>
                 <a href="#" class="nav-link" data-section="search">
-                    <span class="nav-icon">🔍</span>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <span class="nav-text">Recherche</span>
                 </a>
             </nav>
@@ -55,7 +50,6 @@
             <header class="app-header">
                 <div class="header-left">
                     <h2 id="page-title">Tableau de Bord</h2>
-                    <p id="page-subtitle">Bienvenue dans votre système de gestion RH</p>
                 </div>
                 <div class="header-right">
                     <div class="date-time" id="current-datetime"></div>
@@ -76,22 +70,30 @@
                             <div class="kpi-card total">
                                 <div class="kpi-value" id="kpi-total">0</div>
                                 <div class="kpi-label">Total Employés</div>
-                                <div class="kpi-icon">👥</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card male">
                                 <div class="kpi-value" id="kpi-male">0</div>
                                 <div class="kpi-label">Hommes</div>
-                                <div class="kpi-icon">👨</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0-8 0v3"/><circle cx="12" cy="7" r="3"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card female">
                                 <div class="kpi-value" id="kpi-female">0</div>
                                 <div class="kpi-label">Femmes</div>
-                                <div class="kpi-icon">👩</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="3"/><path d="M12 10v7"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card ratio">
                                 <div class="kpi-value" id="kpi-ratio">0%</div>
-                                <div class="kpi-label">Ratio H/F</div>
-                                <div class="kpi-icon">⚖️</div>
+                                <div class="kpi-label">Taux de féminisation</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 21h10"/><path d="M6 10l6 6 6-6"/></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -100,20 +102,26 @@
                     <div class="kpi-category kpi-category--organisation">
                         <div class="category-title">🏢 Organisation</div>
                         <div class="category-grid">
-                            <div class="kpi-card department">
-                                <div class="kpi-value" id="kpi-department">0</div>
-                                <div class="kpi-label">Rattachements</div>
-                                <div class="kpi-icon">🏢</div>
-                            </div>
+                                <div class="kpi-card department">
+                                    <div class="kpi-value" id="kpi-department">0</div>
+                                    <div class="kpi-label">Rattachements</div>
+                                    <div class="kpi-icon">
+                                        <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                                    </div>
+                                </div>
                             <div class="kpi-card functions">
                                 <div class="kpi-value" id="kpi-functions">0</div>
                                 <div class="kpi-label">Fonctions distinctes</div>
-                                <div class="kpi-icon">💼</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card avg-tenure">
                                 <div class="kpi-value" id="kpi-avg-tenure">0 ans</div>
                                 <div class="kpi-label">Ancienneté moyenne</div>
-                                <div class="kpi-icon">📅</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/></svg>
+                                </div>
                             </div>
                             <!-- turnover KPI removed per request -->
                         </div>
@@ -121,59 +129,77 @@
 
                     <!-- KPI Category 3: Contrats & Statuts -->
                     <div class="kpi-category kpi-category--contracts">
-                        <div class="category-title">📋 Contrats & Statuts</div>
+                        <div class="category-title"><svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg> Contrats & Statuts</div>
                         <div class="category-grid">
                             <div class="kpi-card cdi">
                                 <div class="kpi-value" id="kpi-cdi">0</div>
                                 <div class="kpi-label">CDI</div>
-                                <div class="kpi-icon">✅</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
                             </div>
                             <div class="kpi-card cdd">
                                 <div class="kpi-value" id="kpi-cdd">0</div>
                                 <div class="kpi-label">CDD</div>
-                                <div class="kpi-icon">📅</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card int-mdj">
                                 <div class="kpi-value" id="kpi-int-mdj">0</div>
                                 <div class="kpi-label">INT MDJ</div>
-                                <div class="kpi-icon">🎯</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                </div>
                             </div>
                             <div class="kpi-card stage">
                                 <div class="kpi-value" id="kpi-stage">0</div>
                                 <div class="kpi-label">Stagiaires</div>
-                                <div class="kpi-icon">🎓</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10v6"/><path d="M5 9h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><path d="M6 4h12M9 4v3M15 4v3"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card consultant">
                                 <div class="kpi-value" id="kpi-consultant">0</div>
                                 <div class="kpi-label">Consultant</div>
-                                <div class="kpi-icon">🧑‍💼</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="5" rx="1"/><path d="M4 9v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- KPI Category 4: Âge & Générations -->
                     <div class="kpi-category kpi-category--generations">
-                        <div class="category-title">🎂 Générations</div>
+                        <div class="category-title"><svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg> Générations</div>
                         <div class="category-grid">
                             <div class="kpi-card gen-z">
                                 <div class="kpi-value" id="kpi-genz">0</div>
                                 <div class="kpi-label">Génération Z</div>
-                                <div class="kpi-icon">📱</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card millennial">
                                 <div class="kpi-value" id="kpi-millennial">0</div>
-                                <div class="kpi-label">Millennials</div>
-                                <div class="kpi-icon">💻</div>
+                                <div class="kpi-label">Génération Y</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.46 15.89 10 13 3 20"></polyline><polyline points="23 6 23 13 16 13"></polyline></svg>
+                                </div>
                             </div>
                             <div class="kpi-card gen-x">
                                 <div class="kpi-value" id="kpi-genx">0</div>
                                 <div class="kpi-label">Génération X</div>
-                                <div class="kpi-icon">📺</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 5v14"/><path d="M7 19V5M3 5h8M13 19h8"/></svg>
+                                </div>
                             </div>
                             <div class="kpi-card baby-boomer">
                                 <div class="kpi-value" id="kpi-boomer">0</div>
                                 <div class="kpi-label">Baby Boomers</div>
-                                <div class="kpi-icon">🎸</div>
+                                <div class="kpi-icon">
+                                    <svg viewBox="0 0 24 24" class="kpi-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v2H7V3M15 3v2h2V3M6 6v12a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V6M8 10h8"/></svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,7 +211,6 @@
                     <div class="stat-panel stat-panel--statut">
                         <div class="panel-header">
                             <h3>📋 Répartition par Statut</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="statut-chart">
                         </div>
                         <div id="statut-chart" class="stat-items">
                             <p class="loading">Chargement...</p>
@@ -214,22 +239,10 @@
                         </div>
                     </div>
 
-                    <!-- Sexe -->
-                    <div class="stat-panel stat-panel--sexe">
-                        <div class="panel-header">
-                            <h3>👥 Répartition par Sexe</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="sexe-chart">
-                        </div>
-                        <div id="sexe-chart" class="stat-items">
-                            <p class="loading">Chargement...</p>
-                        </div>
-                    </div>
-
                     <!-- Âge -->
                     <div class="stat-panel stat-panel--age">
                         <div class="panel-header">
                             <h3>🎂 Répartition par Âge</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="age-chart">
                         </div>
                         <div id="age-chart" class="stat-items">
                             <p class="loading">Chargement...</p>
@@ -240,7 +253,6 @@
                     <div class="stat-panel stat-panel--tenure">
                         <div class="panel-header">
                             <h3>📅 Ancienneté</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="tenure-chart">
                         </div>
                         <div id="tenure-chart" class="stat-items">
                             <p class="loading">Chargement...</p>
