@@ -518,7 +518,9 @@ function updateKPIs() {
     allEmployees.forEach(emp => {
         const rattach = (emp["Rattachement"] || "").toString().trim();
         const fonction = (emp["Fonction"] || "").toString().trim();
-        if (rattach && rattach !== "") rattachements.add(rattach);
+        if (rattach && rattach !== "") {
+            rattachements.add(rattach);
+        }
         if (fonction && fonction !== "") fonctions.add(fonction);
     });
     
@@ -647,7 +649,7 @@ function displayRattachmentStatistics() {
     const sorted = Object.entries(rattachMap).sort((a, b) => b[1] - a[1]);
     
     if (sorted.length > 0) {
-        sorted.slice(0, 10).forEach(([rattach, count]) => {
+        sorted.forEach(([rattach, count]) => {
             const percentage = ((count / allEmployees.length) * 100).toFixed(1);
             html += `
                 <div class="stat-item">
@@ -829,26 +831,20 @@ function displayEmployeesTable() {
     loadingIndicator.style.display = "none";
     emptyState.style.display = "none";
     
-    // En-têtes avec dates formatées
+    // En-têtes compacts pour meilleure lisibilité
     tableHeaders.innerHTML = "";
     const displayHeaders = [
         "Matricule", 
         "Nom et prénoms", 
         "Fonction", 
-        "Statut", 
-        "Rattachement",
-        "Date d'embauche_formatted",
-        "Age"
+        "Niveau"
     ];
     
     const displayNames = [
         "Matricule",
-        "Nom et prénoms",
+        "Nom et prénom",
         "Fonction",
-        "Statut",
-        "Rattachement",
-        "Date d'embauche",
-        "Âge"
+        "Niveau"
     ];
     
     displayHeaders.forEach((header, idx) => {
@@ -886,8 +882,14 @@ function displayEmployeesTable() {
         
         const actionTd = document.createElement("td");
         actionTd.innerHTML = `
-            <button class="btn-action" onclick="viewEmployeeDetails('${emp["Matricule"] || ''}')">
-                👁️ Voir
+            <button class="btn-action" onclick="viewEmployeeDetails('${emp["Matricule"] || ''}')" aria-label="Voir les détails" title="Voir les détails">
+                <span class="btn-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
+                <span class="btn-action-text">Voir</span>
             </button>
         `;
         row.appendChild(actionTd);
@@ -1278,9 +1280,8 @@ function displayCollaboratorsTable(collaborators) {
     const displayHeaders = [
         "Matricule",
         "Nom et prénoms",
-        "Date de naissance",
         "Fonction",
-        "Rattachement"
+        "Niveau"
     ];
     
     // En-têtes
@@ -1330,8 +1331,14 @@ function displayCollaboratorsTable(collaborators) {
         const actionTd = document.createElement("td");
         const matricule = getFieldValueByNormalizedName(collab, "Matricule") || "";
         actionTd.innerHTML = `
-            <button class="btn-action" onclick="viewCollaboratorDetails('${matricule}')">
-                👁️ Voir
+            <button class="btn-action" onclick="viewCollaboratorDetails('${matricule}')" aria-label="Voir les détails" title="Voir les détails">
+                <span class="btn-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
+                <span class="btn-action-text">Voir</span>
             </button>
         `;
         row.appendChild(actionTd);

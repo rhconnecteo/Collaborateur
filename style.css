@@ -483,8 +483,10 @@ body {
     .sidebar-nav {
         flex-direction: row;
         gap: var(--spacing-sm);
-        flex: 1;
+        flex: 0 0 auto;
         overflow-x: auto;
+        margin-left: auto;
+        justify-content: flex-end;
     }
 
     .nav-link {
@@ -1271,16 +1273,16 @@ body {
     .data-table td {
         padding: var(--spacing-sm);
     }
-}
 /* ========================================
    NOUVEAUX STYLES POUR KPI AMÉLIORÉS
    ======================================== */
 
 .kpi-grid-enhanced {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
+    align-items: stretch;
 }
 
 .kpi-category {
@@ -1289,6 +1291,9 @@ body {
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .category-title {
@@ -1305,6 +1310,73 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--spacing-lg);
+}
+
+.kpi-category .kpi-card {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px;
+}
+
+.kpi-category .kpi-value {
+    font-size: clamp(16px, 2vw, 24px);
+    line-height: 1;
+}
+
+.kpi-category .kpi-label {
+    font-size: clamp(8px, 1vw, 10px);
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.kpi-category .kpi-icon {
+    font-size: clamp(10px, 1.5vw, 16px);
+    opacity: 0.12;
+    align-self: flex-end;
+}
+
+/* Keep KPI cards aligned (avoid 4+1 layout) */
+.kpi-category--contracts .category-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.kpi-category--generations .category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+    .kpi-grid-enhanced {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-category {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-category {
+        padding: 10px;
+    }
+
+    .kpi-category .kpi-card {
+        padding: 6px;
+    }
+
+    .kpi-category .kpi-value {
+        font-size: 11px;
+    }
+
+    .kpi-category .kpi-label {
+        font-size: 6px;
+    }
+
+    .kpi-category .kpi-icon {
+        font-size: 10px;
+    }
 }
 
 /* Nouvelles couleurs pour les KPI */
@@ -1415,3 +1487,502 @@ canvas {
 }
 
 /* Responsive design handled by comprehensive media queries */
+
+/* Compact mobile mode for small phones like 320px width */
+@media (max-width: 390px) {
+    body {
+        font-size: 12px;
+    }
+
+    .sidebar {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .logo h1 {
+        font-size: 15px;
+    }
+
+    .nav-link {
+        padding: 4px 6px;
+        font-size: 10px;
+    }
+
+    .nav-icon {
+        font-size: 14px;
+    }
+
+    .app-header {
+        padding: 10px 8px;
+    }
+
+    .header-left h2 {
+        font-size: 15px;
+        line-height: 1.1;
+    }
+
+    .header-left p {
+        font-size: 10px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .date-time {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+
+    .content-section {
+        padding: 8px;
+    }
+
+    .filter-bar {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .search-input {
+        font-size: 11px;
+        padding: 7px 9px 7px 34px;
+    }
+
+    .search-icon {
+        font-size: 13px;
+        left: 10px;
+    }
+
+    .btn {
+        padding: 7px 10px;
+        font-size: 10px;
+    }
+
+    .table-panel {
+        padding: 8px;
+        border-radius: 10px;
+    }
+
+    #employees-table,
+    #collab-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 2px 1px;
+        font-size: 7px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Dense table with separators */
+    .data-table {
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        border-right: 1px solid var(--gray-300);
+        border-bottom: 1px solid var(--gray-300);
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table th {
+        text-transform: lowercase;
+    }
+
+    /* Keep columns tight and prioritize full names */
+    #employees-table th:nth-child(1),
+    #employees-table td:nth-child(1),
+    #collab-table th:nth-child(1),
+    #collab-table td:nth-child(1) {
+        width: 14%;
+    }
+
+    #employees-table th:nth-child(2),
+    #employees-table td:nth-child(2),
+    #collab-table th:nth-child(2),
+    #collab-table td:nth-child(2) {
+        width: 48%;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+        line-height: 1.05;
+    }
+
+    #employees-table th:nth-child(3),
+    #employees-table td:nth-child(3),
+    #collab-table th:nth-child(3),
+    #collab-table td:nth-child(3) {
+        width: 18%;
+    }
+
+    #employees-table th:nth-child(4),
+    #employees-table td:nth-child(4),
+    #collab-table th:nth-child(4),
+    #collab-table td:nth-child(4) {
+        width: 12%;
+    }
+
+    #employees-table th:nth-child(5),
+    #employees-table td:nth-child(5),
+    #collab-table th:nth-child(5),
+    #collab-table td:nth-child(5) {
+        width: 8%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .btn-action-text {
+        display: none;
+    }
+
+    .btn-action {
+        min-width: 0;
+        gap: 0;
+        padding: 4px 5px;
+    }
+
+    .btn-action {
+        background: transparent;
+        color: var(--gray-900);
+        border: 1px solid var(--gray-400);
+        border-radius: 999px;
+        box-shadow: none;
+    }
+
+    .btn-action:hover {
+        background: var(--gray-100);
+        color: var(--gray-900);
+        border-color: var(--gray-500);
+        transform: none;
+    }
+
+    .btn-action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 10px;
+        height: 10px;
+        color: #111111;
+    }
+
+    .btn-action-icon svg {
+        width: 10px;
+        height: 10px;
+        display: block;
+    }
+
+    .btn-action {
+        padding: 4px 6px;
+        font-size: 9px;
+    }
+
+    .pagination {
+        gap: 6px;
+        margin-top: 12px;
+        font-size: 10px;
+        flex-wrap: wrap;
+    }
+
+    #page-info {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 320px) {
+    .sidebar {
+        padding: 6px;
+    }
+
+    .sidebar-nav {
+        flex: 0 0 auto;
+        margin-left: auto;
+        justify-content: flex-end;
+    }
+
+    .logo h1 {
+        font-size: 14px;
+    }
+
+    .nav-link {
+        padding: 3px 5px;
+        font-size: 9px;
+    }
+
+    .header-left h2 {
+        font-size: 14px;
+    }
+
+    .header-left p,
+    .date-time {
+        font-size: 9px;
+    }
+
+    .date-time {
+        padding: 3px 6px;
+    }
+
+    .content-section {
+        padding: 6px;
+    }
+
+    .filter-bar {
+        gap: 4px;
+    }
+
+    .search-input {
+        font-size: 10px;
+        padding: 6px 8px 6px 32px;
+    }
+
+    .btn {
+        padding: 6px 8px;
+        font-size: 9px;
+    }
+
+    .table-panel {
+        padding: 6px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 2px 1px;
+        font-size: 6px;
+        line-height: 1;
+    }
+
+    .data-table th,
+    .data-table td {
+        border-right: 1px solid var(--gray-300);
+        border-bottom: 1px solid var(--gray-300);
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child {
+        border-right: none;
+    }
+
+    .data-table th {
+        text-transform: lowercase;
+    }
+
+    #employees-table th:nth-child(1),
+    #employees-table td:nth-child(1),
+    #collab-table th:nth-child(1),
+    #collab-table td:nth-child(1) {
+        width: 13%;
+    }
+
+    #employees-table th:nth-child(2),
+    #employees-table td:nth-child(2),
+    #collab-table th:nth-child(2),
+    #collab-table td:nth-child(2) {
+        width: 49%;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+        line-height: 1;
+    }
+
+    #employees-table th:nth-child(3),
+    #employees-table td:nth-child(3),
+    #collab-table th:nth-child(3),
+    #collab-table td:nth-child(3) {
+        width: 18%;
+    }
+
+    #employees-table th:nth-child(4),
+    #employees-table td:nth-child(4),
+    #collab-table th:nth-child(4),
+    #collab-table td:nth-child(4) {
+        width: 12%;
+    }
+
+    #employees-table th:nth-child(5),
+    #employees-table td:nth-child(5),
+    #collab-table th:nth-child(5),
+    #collab-table td:nth-child(5) {
+        width: 8%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .btn-action-text {
+        display: none;
+    }
+
+    .btn-action {
+        min-width: 0;
+        gap: 0;
+        padding: 3px 4px;
+    }
+
+    .btn-action {
+        background: transparent;
+        color: var(--gray-900);
+        border: 1px solid var(--gray-400);
+        border-radius: 999px;
+        box-shadow: none;
+    }
+
+    .btn-action:hover {
+        background: var(--gray-100);
+        color: var(--gray-900);
+        border-color: var(--gray-500);
+        transform: none;
+    }
+
+    .btn-action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 9px;
+        height: 9px;
+        color: #111111;
+    }
+
+    .btn-action-icon svg {
+        width: 9px;
+        height: 9px;
+        display: block;
+    }
+
+    .btn-action {
+        padding: 3px 5px;
+        font-size: 8px;
+    }
+
+    .pagination {
+        gap: 4px;
+        font-size: 9px;
+    }
+}
+
+/* ========================================
+   DASHBOARD KPI NORMALIZATION (FINAL)
+   ======================================== */
+
+.kpi-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: stretch;
+}
+
+.kpi-category {
+    height: 100%;
+    padding: 16px;
+}
+
+.kpi-category .category-grid {
+    display: grid;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.kpi-category--effectifs .category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kpi-category--organisation .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpi-category--contracts .category-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.kpi-category--generations .category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kpi-category .kpi-card {
+    aspect-ratio: 1 / 1;
+    min-height: 92px;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.kpi-category .kpi-value {
+    font-size: 16px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.kpi-category .kpi-label {
+    font-size: 8px;
+    line-height: 1.15;
+    margin-bottom: 2px;
+}
+
+.kpi-category .kpi-icon {
+    font-size: 11px;
+    opacity: 0.1;
+}
+
+@media (max-width: 1100px) {
+    .kpi-grid-enhanced {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .kpi-category .kpi-card {
+        aspect-ratio: auto;
+        min-height: 74px;
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-category {
+        padding: 10px;
+    }
+
+    .kpi-category--effectifs .category-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .kpi-category--organisation .category-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kpi-category--contracts .category-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kpi-category--generations .category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpi-category .kpi-card {
+        aspect-ratio: auto;
+        min-height: 66px;
+        padding: 6px;
+    }
+
+    .kpi-category .kpi-value {
+        font-size: 12px;
+    }
+
+    .kpi-category .kpi-label {
+        font-size: 7px;
+    }
+
+    .kpi-category .kpi-icon {
+        font-size: 9px;
+    }
+}
