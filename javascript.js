@@ -2,7 +2,8 @@
 // CONFIGURATION API
 // ========================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwO0zMEkcp3bFdNB-9o2bL10K0CaJ86JyuwaLlybraQK84JDt_nJiBZ4ZebOepKrfmePA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwiT-8kyrAfAt6xMdLJUWmG6as0YYxjtVwdMbQKFKMNMzead_zdujcQwjNGDBDUWYUm9g/exec";
+
 // ========================================
 // VARIABLES GLOBALES
 // ========================================
@@ -16,8 +17,6 @@ const itemsPerPage = 10;
 // Chart instances
 let statusGenderChart = null;
 let deptChart = null;
-let evolutionChart = null;
-let agePyramid = null;
 
 // ========================================
 // INITIALISATION
@@ -32,19 +31,17 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // ========================================
-// DATE UTILITIES - CORRECTION DU PROBLÈME
+// DATE UTILITIES
 // ========================================
 
 function formatDate(dateString) {
     if (!dateString) return "-";
     
-    // Si c'est déjà une date au format YYYY-MM-DD
     if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
     }
     
-    // Si c'est au format ISO avec T
     if (typeof dateString === 'string' && dateString.includes('T')) {
         const date = new Date(dateString);
         if (!isNaN(date.getTime())) {
@@ -55,7 +52,6 @@ function formatDate(dateString) {
         }
     }
     
-    // Essayer de parser autrement
     const date = new Date(dateString);
     if (!isNaN(date.getTime())) {
         const day = String(date.getDate()).padStart(2, '0');
@@ -67,31 +63,26 @@ function formatDate(dateString) {
     return dateString;
 }
 
-// Normalize a date string (YYYY-MM-DD or ISO) to an ISO UTC string or null
 function normalizeToISO(dateString) {
     if (!dateString) return null;
     const s = dateString.toString().trim();
 
-    // DD/MM/YYYY ou DD-MM-YYYY (format fréquent dans Sheets / export local)
     const localDateMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
     if (localDateMatch) {
         const [, day, month, year] = localDateMatch;
         return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 0, 0, 0)).toISOString();
     }
 
-    // YYYY-MM-DD (date-only) -> interpret as midnight UTC
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
         const [y, m, d] = s.split('-').map(Number);
         return new Date(Date.UTC(y, m - 1, d, 0, 0, 0)).toISOString();
     }
 
-    // If already contains T or time info, try to parse and re-emit ISO
     const parsed = new Date(s);
     if (!isNaN(parsed.getTime())) return parsed.toISOString();
     return null;
 }
 
-// Normalize date fields on employee records (adds *_iso fields)
 function normalizeEmployeeDates(array) {
     return array.map(emp => {
         const e = { ...emp };
@@ -110,14 +101,8 @@ function normalizeEmployeeDates(array) {
 function getBirthDateInfo(dateValue) {
     const iso = normalizeToISO(dateValue);
     if (!iso) {
-        return {
-            valid: false,
-            iso: null,
-            formatted: "-",
-            age: null
-        };
+        return { valid: false, iso: null, formatted: "-", age: null };
     }
-
     const age = calculateAge(iso);
     return {
         valid: age !== null && !isNaN(age),
@@ -136,7 +121,6 @@ function getFieldValueByNormalizedName(record, targetName) {
             return record[key];
         }
     }
-
     return null;
 }
 
@@ -144,25 +128,17 @@ function calculateAge(dateNaissance) {
     if (!dateNaissance) return null;
     
     let birthDate;
-    
-    // Nettoyer la date
     let cleanDate = dateNaissance.toString().trim();
     
-    // Si c'est au format ISO
     if (cleanDate.includes('T')) {
         birthDate = new Date(cleanDate);
-    } 
-    // Si c'est au format YYYY-MM-DD
-    else if (cleanDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    } else if (cleanDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [year, month, day] = cleanDate.split('-');
         birthDate = new Date(year, month - 1, day);
-    }
-    // Si c'est au format DD/MM/YYYY
-    else if (cleanDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    } else if (cleanDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         const [day, month, year] = cleanDate.split('/');
         birthDate = new Date(year, month - 1, day);
-    }
-    else {
+    } else {
         birthDate = new Date(cleanDate);
     }
     
@@ -175,7 +151,6 @@ function calculateAge(dateNaissance) {
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
-    
     return age;
 }
 
@@ -187,16 +162,13 @@ function calculateTenure(dateEmbauche) {
     
     if (cleanDate.includes('T')) {
         hireDate = new Date(cleanDate);
-    } 
-    else if (cleanDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    } else if (cleanDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [year, month, day] = cleanDate.split('-');
         hireDate = new Date(year, month - 1, day);
-    }
-    else if (cleanDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    } else if (cleanDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         const [day, month, year] = cleanDate.split('/');
         hireDate = new Date(year, month - 1, day);
-    }
-    else {
+    } else {
         hireDate = new Date(cleanDate);
     }
     
@@ -205,9 +177,7 @@ function calculateTenure(dateEmbauche) {
     const today = new Date();
     const diffTime = Math.abs(today - hireDate);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffYears = diffDays / 365.25;
-    
-    return diffYears;
+    return diffDays / 365.25;
 }
 
 function getGeneration(age) {
@@ -224,32 +194,30 @@ function getGeneration(age) {
 
 function setupEventListeners() {
     document.getElementById("refresh-btn").addEventListener("click", loadAllEmployees);
-    document.getElementById("search-btn").addEventListener("click", searchEmployees);
-    document.getElementById("reset-btn").addEventListener("click", resetSearch);
-    
-    document.getElementById("prev-btn").addEventListener("click", previousPage);
-    document.getElementById("next-btn").addEventListener("click", nextPage);
-    
-    document.getElementById("search-input").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") searchEmployees();
-    });
 
-    // Collaborator search listeners
-    document.getElementById("collab-search-btn").addEventListener("click", searchCollaborators);
-    document.getElementById("collab-reset-btn").addEventListener("click", resetCollaboratorSearch);
-    document.getElementById("collab-search-input").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") searchCollaborators();
+    const orgSearchButton = document.getElementById("org-search-btn");
+    const orgResetButton = document.getElementById("org-reset-btn");
+    const orgSearchInput = document.getElementById("org-search-input");
+
+    orgSearchButton.addEventListener("click", searchInOrganigramme);
+    orgResetButton.addEventListener("click", resetOrgSearch);
+    orgSearchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") searchInOrganigramme();
     });
     
     document.querySelector(".modal-close").addEventListener("click", closeModal);
     document.getElementById("employee-modal").addEventListener("click", (e) => {
         if (e.target.id === "employee-modal") closeModal();
     });
-
-    // Panel search listeners for filtering stat items
-    const panelSearchInputs = document.querySelectorAll(".panel-search");
-    panelSearchInputs.forEach(input => {
-        input.addEventListener("keyup", filterStatItems);
+    document.getElementById("image-lightbox-close").addEventListener("click", closeImageLightbox);
+    document.getElementById("image-lightbox").addEventListener("click", (e) => {
+        if (e.target.id === "image-lightbox") closeImageLightbox();
+    });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeImageLightbox();
+            closeModal();
+        }
     });
 }
 
@@ -264,20 +232,20 @@ function setupNavigation() {
             
             navLinks.forEach(l => l.classList.remove("active"));
             document.querySelectorAll(".content-section").forEach(s => s.classList.remove("active"));
+            document.querySelector(".main-content").classList.toggle("organigramme-active", section === "organigramme");
             
             link.classList.add("active");
             document.getElementById(section).classList.add("active");
             
             updatePageHeader(section);
             
-            if (section === "analytics") {
-                loadAnalyticsCharts();
+            if (section === "organigramme") {
+                buildOrganigramme();
             }
         });
     });
 }
 
-// Filter stat items in panels based on search input
 function filterStatItems(event) {
     const input = event.target;
     const targetId = input.getAttribute("data-target");
@@ -301,7 +269,6 @@ function filterStatItems(event) {
         }
     });
     
-    // Show "no results" message if nothing matches
     let noResultsMsg = container.querySelector(".no-results");
     if (visibleCount === 0 && query !== "") {
         if (!noResultsMsg) {
@@ -335,16 +302,12 @@ function updateDateTime() {
 function updatePageHeader(section) {
     const titles = {
         dashboard: { title: "Tableau de Bord", subtitle: "Vue d'ensemble de votre organisation" },
-        employees: { title: "Employés", subtitle: "Gérez et consultez vos collaborateurs" },
-        analytics: { title: "Analytique", subtitle: "Statistiques détaillées et rapports" },
-        search: { title: "Recherche Collaborateur", subtitle: "Trouvez rapidement vos collaborateurs" }
+        organigramme: { title: "Organigramme", subtitle: "Structure hiérarchique de l'organisation" }
     };
     
     const data = titles[section] || titles.dashboard;
     const titleEl = document.getElementById("page-title");
-    const subtitleEl = document.getElementById("page-subtitle");
     if (titleEl) titleEl.textContent = data.title;
-    if (subtitleEl) subtitleEl.textContent = data.subtitle;
 }
 
 // ========================================
@@ -379,7 +342,6 @@ async function loadAllEmployees() {
         rawData = response.data;
         extraKPIs = response.kpis || null;
     } else {
-        // Fallback: essayer de charger data.json local si l'API ne renvoie rien
         try {
             const localResp = await fetch('data.json');
             const localJson = await localResp.json();
@@ -397,7 +359,6 @@ async function loadAllEmployees() {
     }
 
     if (rawData && rawData.length > 0) {
-        // Normaliser les dates vers ISO si nécessaire
         const normalized = normalizeEmployeeDates(rawData);
 
         allEmployees = normalized.filter(emp => {
@@ -406,7 +367,6 @@ async function loadAllEmployees() {
         }).map(emp => {
             const cleaned = { ...emp };
 
-            // Chercher la colonne "Date de naissance" (peut avoir des espaces)
             let dateOfBirth = null;
             let dateOfBirthKey = null;
             
@@ -427,7 +387,6 @@ async function loadAllEmployees() {
                 }
             }
 
-            // Chercher la colonne "Date d'embauche" 
             let hireDate = null;
             let hireDateKey = null;
             
@@ -454,40 +413,20 @@ async function loadAllEmployees() {
 
         if (allEmployees.length > 0) headers = Object.keys(allEmployees[0]);
 
-        // Exposer KPIs additionnels pour affichage
         window._extraKPIs = extraKPIs;
 
-        const birthDateSamples = allEmployees.slice(0, 5).map((emp, index) => {
-            const birthValue = getFieldValueByNormalizedName(emp, "Date de naissance");
-            const birthInfo = getBirthDateInfo(birthValue);
-            return {
-                index: index + 1,
-                matricule: getFieldValueByNormalizedName(emp, "Matricule"),
-                nom: getFieldValueByNormalizedName(emp, "Nom et prénoms"),
-                rawBirthDate: birthValue,
-                parsedISO: birthInfo.iso,
-                age: birthInfo.age,
-                valid: birthInfo.valid
-            };
-        });
-
-        console.log("[HRFlow] Échantillon dates de naissance", birthDateSamples);
-
         displayDashboard();
-        displayEmployeesTable();
-        showToast(`${allEmployees.length} employés chargés avec succès`, "success");
+        showToast(`${allEmployees.length} profils chargés avec succès`, "success");
     }
 
     showLoading(false);
 }
 
 // ========================================
-// TABLEAU DE BORD AVEC NOUVEAUX KPI
+// TABLEAU DE BORD
 // ========================================
 
 function displayDashboard() {
-    console.log("📊 Affichage du tableau de bord avec", allEmployees.length, "employés");
-    
     updateKPIs();
     displayStatusStatistics();
     displayRattachmentStatistics();
@@ -500,7 +439,6 @@ function updateKPIs() {
     const total = allEmployees.length;
     document.getElementById("kpi-total").textContent = total;
     
-    // Genre
     let maleCount = 0, femaleCount = 0;
     allEmployees.forEach(emp => {
         const sexe = (emp["Sexe"] || "").toString().trim().toUpperCase();
@@ -513,22 +451,18 @@ function updateKPIs() {
     const tauxFeminisation = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
     document.getElementById("kpi-ratio").textContent = `${tauxFeminisation}%`;
     
-    // Organisation
     const rattachements = new Set();
     const fonctions = new Set();
     allEmployees.forEach(emp => {
         const rattach = (emp["Rattachement"] || "").toString().trim();
         const fonction = (emp["Fonction"] || "").toString().trim();
-        if (rattach && rattach !== "") {
-            rattachements.add(rattach);
-        }
+        if (rattach && rattach !== "") rattachements.add(rattach);
         if (fonction && fonction !== "") fonctions.add(fonction);
     });
     
     document.getElementById("kpi-department").textContent = rattachements.size;
     document.getElementById("kpi-functions").textContent = fonctions.size;
     
-    // Ancienneté moyenne
     let totalTenure = 0;
     let tenureCount = 0;
     allEmployees.forEach(emp => {
@@ -540,16 +474,11 @@ function updateKPIs() {
     const avgTenure = tenureCount > 0 ? (totalTenure / tenureCount).toFixed(1) : 0;
     document.getElementById("kpi-avg-tenure").textContent = `${avgTenure} ans`;
     
-    // Turnover removed per request
-    
-    // Statuts
-    // Statuts — count only requested statuses with exclusive matching
     const allowedStatuses = ["CDI", "CDD", "STAGIAIRE", "CONSULTANT", "INT MDJ"];
     const statusCounts = { CDI:0, CDD:0, STAGIAIRE:0, CONSULTANT:0, "INT MDJ":0 };
     allEmployees.forEach(emp => {
         const raw = getFieldValueByNormalizedName(emp, "Statut") || emp["Statut"] || "";
         const statut = raw.toString().trim().toUpperCase();
-        // Use exclusive matching to avoid double-counting
         for (const s of allowedStatuses) {
             if (statut.includes(s)) {
                 statusCounts[s]++;
@@ -566,7 +495,6 @@ function updateKPIs() {
     const intMdjElem = document.getElementById("kpi-int-mdj");
     if (intMdjElem) intMdjElem.textContent = statusCounts["INT MDJ"];
     
-    // Générations
     let genZ = 0, genY = 0, genX = 0, boomer = 0;
     allEmployees.forEach(emp => {
         const birthDateValue = getFieldValueByNormalizedName(emp, "Date de naissance");
@@ -577,9 +505,6 @@ function updateKPIs() {
         else if (gen === "Génération X") genX++;
         else if (gen === "Baby Boomer") boomer++;
     });
-
-    console.log("[HRFlow] KPI générations", { total, genZ, genY, genX, boomer });
-    console.log("[HRFlow] Statuts détectés", [...new Set(allEmployees.map(emp => getFieldValueByNormalizedName(emp, "Statut")).filter(Boolean))]);
     
     document.getElementById("kpi-genz").textContent = genZ;
     document.getElementById("kpi-millennial").textContent = genY;
@@ -590,17 +515,12 @@ function updateKPIs() {
 function displayStatusStatistics() {
     const container = document.getElementById("statut-chart");
     const statusMap = {};
-    
-    // Only include the requested statuses and in this order
     const allowed = ["CDI", "CDD", "STAGIAIRE", "CONSULTANT", "INT MDJ"];
     allowed.forEach(s => statusMap[s] = 0);
 
     allEmployees.forEach(emp => {
         const raw = getFieldValueByNormalizedName(emp, "Statut") || emp["Statut"] || "";
-        const statut = raw.toString().trim();
-        const up = statut.toUpperCase();
-        
-        // Use exclusive matching to avoid double-counting
+        const up = raw.toString().trim().toUpperCase();
         let matched = false;
         for (const s of allowed) {
             if (up.includes(s) && !matched) {
@@ -610,8 +530,6 @@ function displayStatusStatistics() {
             }
         }
     });
-
-    console.log("[HRFlow] Répartition par statut (corrigée)", statusMap);
     
     let html = "";
     const sorted = Object.entries(statusMap).sort((a, b) => b[1] - a[1]);
@@ -619,12 +537,11 @@ function displayStatusStatistics() {
     if (sorted.length > 0) {
         sorted.forEach(([statut, count]) => {
             const percentage = ((count / allEmployees.length) * 100).toFixed(1);
-            const width = percentage;
             html += `
                 <div class="stat-item">
                     <span class="stat-label">${statut}</span>
                     <div class="stat-bar-container">
-                        <div class="stat-bar" style="width: ${width}%"></div>
+                        <div class="stat-bar" style="width: ${percentage}%"></div>
                     </div>
                     <span class="stat-value">${count} (${percentage}%)</span>
                 </div>
@@ -633,7 +550,6 @@ function displayStatusStatistics() {
     } else {
         html = '<p class="loading">Aucun statut trouvé</p>';
     }
-    
     container.innerHTML = html;
 }
 
@@ -662,7 +578,6 @@ function displayRattachmentStatistics() {
     } else {
         html = '<p class="loading">Aucun rattachement trouvé</p>';
     }
-    
     container.innerHTML = html;
 }
 
@@ -679,7 +594,6 @@ function displayFunctionStatistics() {
     const sorted = Object.entries(fonctionMap).sort((a, b) => b[1] - a[1]);
 
     if (sorted.length > 0) {
-        // show all and let CSS scrolling handle overflow
         sorted.forEach(([fonction, count]) => {
             const percentage = ((count / allEmployees.length) * 100).toFixed(1);
             html += `
@@ -692,43 +606,6 @@ function displayFunctionStatistics() {
     } else {
         html = '<p class="loading">Aucune fonction trouvée</p>';
     }
-    
-    container.innerHTML = html;
-}
-
-function displayGenderStatistics() {
-    const container = document.getElementById("sexe-chart");
-    const genderMap = {};
-    
-    allEmployees.forEach(emp => {
-        const sexe = (emp["Sexe"] || "Non défini").toString().trim().toUpperCase();
-        let gender = "Non défini";
-        if (sexe === "M" || sexe === "H" || sexe === "HOMME") gender = "Hommes";
-        else if (sexe === "F" || sexe === "FEMME") gender = "Femmes";
-        genderMap[gender] = (genderMap[gender] || 0) + 1;
-    });
-    
-    let html = "";
-    const sorted = Object.entries(genderMap).sort((a, b) => b[1] - a[1]);
-    
-    if (sorted.length > 0) {
-        sorted.forEach(([gender, count]) => {
-            const percentage = ((count / allEmployees.length) * 100).toFixed(1);
-            const icon = gender === "Hommes" ? "👨" : gender === "Femmes" ? "👩" : "❓";
-            html += `
-                <div class="stat-item">
-                    <span class="stat-label">${icon} ${gender}</span>
-                    <div class="stat-bar-container">
-                        <div class="stat-bar" style="width: ${percentage}%"></div>
-                    </div>
-                    <span class="stat-value">${count} (${percentage}%)</span>
-                </div>
-            `;
-        });
-    } else {
-        html = '<p class="loading">Aucune donnée</p>';
-    }
-    
     container.innerHTML = html;
 }
 
@@ -753,8 +630,6 @@ function displayAgeStatistics() {
             else ageRanges["55 ans et +"]++;
         }
     });
-
-    console.log("[HRFlow] Répartition par âge", ageRanges);
     
     let html = "";
     for (const [range, count] of Object.entries(ageRanges)) {
@@ -769,7 +644,6 @@ function displayAgeStatistics() {
             </div>
         `;
     }
-    
     container.innerHTML = html || '<p class="loading">Aucune donnée d\'âge</p>';
 }
 
@@ -807,7 +681,6 @@ function displayTenureStatistics() {
             </div>
         `;
     }
-    
     container.innerHTML = html || '<p class="loading">Aucune donnée d\'ancienneté</p>';
 }
 
@@ -832,7 +705,6 @@ function displayEmployeesTable() {
     loadingIndicator.style.display = "none";
     emptyState.style.display = "none";
     
-    // En-têtes compacts pour meilleure lisibilité
     const columns = [
         { key: "Matricule", label: "matricule" },
         { key: "Nom et prénoms", label: "nom et prénom" },
@@ -854,12 +726,10 @@ function displayEmployeesTable() {
     actionTh.setAttribute('data-col', 'actions');
     tableHeaders.appendChild(actionTh);
 
-    // Pagination
     const startIdx = (currentPage - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
     const pageEmployees = filteredEmployees.slice(startIdx, endIdx);
 
-    // Contenu
     tableBody.innerHTML = "";
     pageEmployees.forEach(emp => {
         const row = document.createElement("tr");
@@ -876,8 +746,6 @@ function displayEmployeesTable() {
         const actionTd = document.createElement("td");
         actionTd.setAttribute('data-col', 'actions');
         const matricule = getFieldValueByNormalizedName(emp, "Matricule") || emp["Matricule"] || "";
-        // Always include an accessible icon plus a short text fallback (👁) so
-        // very small screens or font fallbacks still show an eye.
         actionTd.innerHTML = `
             <button class="btn-action" onclick="viewEmployeeDetails('${matricule}')" aria-label="Voir les détails" title="Voir les détails">
                 <span class="btn-action-icon" aria-hidden="true">
@@ -898,101 +766,395 @@ function displayEmployeesTable() {
 }
 
 // ========================================
-// ANALYTICS CHARTS
+// ORGANIGRAMME
 // ========================================
 
-function loadAnalyticsCharts() {
-    if (allEmployees.length === 0) return;
-    
-    // Status by Gender Chart
-    const statusGenderCtx = document.getElementById('status-gender-chart');
-    if (statusGenderCtx && statusGenderChart) {
-        statusGenderChart.destroy();
+function buildOrganigramme() {
+    const treeContainer = document.getElementById("organigramme-tree");
+    const loadingEl = document.getElementById("org-loading");
+    const emptyEl = document.getElementById("org-empty");
+
+    if (!allEmployees || allEmployees.length === 0) {
+        loadingEl.style.display = "none";
+        treeContainer.innerHTML = "";
+        emptyEl.style.display = "block";
+        return;
     }
-    
-    if (statusGenderCtx) {
-        const statuses = [...new Set(allEmployees.map(emp => emp["Statut"]).filter(s => s))];
-        const maleData = [];
-        const femaleData = [];
-        
-        statuses.forEach(status => {
-            let male = 0, female = 0;
-            allEmployees.forEach(emp => {
-                const empStatus = emp["Statut"];
-                const sexe = (emp["Sexe"] || "").toString().trim().toUpperCase();
-                if (empStatus === status) {
-                    if (sexe === "M" || sexe === "H" || sexe === "HOMME") male++;
-                    else if (sexe === "F" || sexe === "FEMME") female++;
-                }
-            });
-            maleData.push(male);
-            femaleData.push(female);
+
+    loadingEl.style.display = "flex";
+    emptyEl.style.display = "none";
+
+    // Petite pause pour laisser le spinner s'afficher
+    setTimeout(() => {
+        try {
+            const roots = buildOrgTreeData(allEmployees);
+            if (roots.length === 0) {
+                treeContainer.innerHTML = "";
+                emptyEl.style.display = "block";
+            } else {
+                const html = roots.map(root => renderOrgNode(root, 0)).join("");
+                treeContainer.innerHTML = html;
+                attachOrgInteractions();
+            }
+        } catch (err) {
+            console.error("Erreur organigramme", err);
+            treeContainer.innerHTML = "";
+            emptyEl.style.display = "block";
+        } finally {
+            loadingEl.style.display = "none";
+        }
+    }, 120);
+}
+
+function getManagerMatricule(emp) {
+    // Cherche la colonne "Matricule Manager" de manière tolérante
+    const val = getFieldValueByNormalizedName(emp, "Matricule Manager") 
+        ?? emp["Matricule Manager"] 
+        ?? emp["Matricule manager"] 
+        ?? "";
+    return val.toString().trim();
+}
+
+function getEmployeeMatricule(emp) {
+    const val = getFieldValueByNormalizedName(emp, "Matricule") ?? emp["Matricule"] ?? "";
+    return val.toString().trim();
+}
+
+function getEmployeeName(emp) {
+    return getFieldValueByNormalizedName(emp, "Nom et prénoms") || emp["Nom et prénoms"] || "Sans nom";
+}
+
+function getEmployeeFunction(emp) {
+    return getFieldValueByNormalizedName(emp, "Fonction") || emp["Fonction"] || "-";
+}
+
+function getEmployeePhoto(emp) {
+    const raw = getFieldValueByNormalizedName(emp, "Photo") || emp["Photo"] || "";
+    const photo = raw.toString().trim();
+
+    if (!photo || /^data:image\//i.test(photo)) {
+        return photo;
+    }
+
+    const urlMatch = photo.match(/https?:\/\/[^\s"'<>]+/i);
+    if (urlMatch) {
+        return normalizePhotoUrl(urlMatch[0]);
+    }
+
+    if (/^https?:\/\//i.test(photo)) {
+        return normalizePhotoUrl(photo);
+    }
+
+    const base64 = photo.replace(/\s/g, "").replace(/-/g, "+").replace(/_/g, "/");
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64) || base64.length < 16) {
+        return "";
+    }
+
+    const paddedBase64 = base64 + "=".repeat((4 - base64.length % 4) % 4);
+    const mimeType = base64.startsWith("iVBORw0KGgo")
+        ? "image/png"
+        : base64.startsWith("/9j/")
+            ? "image/jpeg"
+            : base64.startsWith("R0lGOD")
+                ? "image/gif"
+                : base64.startsWith("UklGR")
+                    ? "image/webp"
+                    : base64.startsWith("PHN2Zy") || base64.startsWith("PD94bWwg")
+                        ? "image/svg+xml"
+                        : "image/jpeg";
+
+    return `data:${mimeType};base64,${paddedBase64}`;
+}
+
+function normalizePhotoUrl(value) {
+    const url = value.trim().replace(/[),.;]+$/, "");
+
+    try {
+        const parsed = new URL(url);
+        const isGoogleDrive = /(^|\.)drive\.google\.com$/i.test(parsed.hostname);
+
+        if (isGoogleDrive) {
+            const fileMatch = parsed.pathname.match(/\/file\/d\/([^/]+)/i)
+                || parsed.pathname.match(/\/d\/([^/]+)/i);
+            const fileId = fileMatch
+                ? fileMatch[1]
+                : parsed.searchParams.get("id");
+
+            if (fileId) {
+                return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
+            }
+        }
+    } catch (error) {
+        console.warn("URL photo invalide:", url, error);
+    }
+
+    return url;
+}
+
+function getEmployeeInitials(name) {
+    if (!name) return "?";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function buildOrgTreeData(employees) {
+    // Index par matricule
+    const byMatricule = new Map();
+    employees.forEach(emp => {
+        const mat = getEmployeeMatricule(emp);
+        if (mat) byMatricule.set(mat, emp);
+    });
+
+    // Construction de la hiérarchie
+    const nodes = new Map();
+    employees.forEach(emp => {
+        const mat = getEmployeeMatricule(emp);
+        if (!mat) return;
+        nodes.set(mat, {
+            id: mat,
+            employee: emp,
+            children: [],
+            parentId: null
         });
-        
-        statusGenderChart = new Chart(statusGenderCtx, {
-            type: 'bar',
-            data: {
-                labels: statuses,
-                datasets: [
-                    {
-                        label: 'Hommes',
-                        data: maleData,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Femmes',
-                        data: femaleData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: 'top' }
+    });
+
+    nodes.forEach(node => {
+        const emp = node.employee;
+        let managerMat = getManagerMatricule(emp);
+
+        // Nettoyage : "CN00063", "cn00063", " CN00063 "
+        managerMat = (managerMat || "").toString().trim();
+
+        // Ignorer les managers invalides ou auto-références
+        if (!managerMat || managerMat === node.id) {
+            return;
+        }
+
+        // Résolution insensible à la casse
+        let resolvedManagerId = null;
+        if (nodes.has(managerMat)) {
+            resolvedManagerId = managerMat;
+        } else {
+            const lower = managerMat.toLowerCase();
+            for (const key of nodes.keys()) {
+                if (key.toLowerCase() === lower) {
+                    resolvedManagerId = key;
+                    break;
                 }
             }
-        });
-    }
-    
-    // Department Chart
-    const deptCtx = document.getElementById('dept-chart');
-    if (deptCtx && deptChart) deptChart.destroy();
-    
-    if (deptCtx) {
-        const deptMap = {};
-        allEmployees.forEach(emp => {
-            const dept = emp["Rattachement"];
-            if (dept && dept !== "") deptMap[dept] = (deptMap[dept] || 0) + 1;
-        });
-        
-        const sortedDepts = Object.entries(deptMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
-        
-        deptChart = new Chart(deptCtx, {
-            type: 'pie',
-            data: {
-                labels: sortedDepts.map(d => d[0]),
-                datasets: [{
-                    data: sortedDepts.map(d => d[1]),
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                        '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: 'right' }
+        }
+
+        if (resolvedManagerId && nodes.has(resolvedManagerId)) {
+            node.parentId = resolvedManagerId;
+            nodes.get(resolvedManagerId).children.push(node);
+        }
+    });
+
+    // Détection des cycles : si un nœud est son propre ancêtre, on le détache
+    nodes.forEach(node => {
+        const visited = new Set();
+        let current = node;
+        while (current && current.parentId) {
+            if (visited.has(current.id)) {
+                // Cycle détecté : on détache ce nœud de son parent
+                const parent = nodes.get(current.parentId);
+                if (parent) {
+                    parent.children = parent.children.filter(c => c.id !== current.id);
                 }
+                current.parentId = null;
+                break;
             }
-        });
+            visited.add(current.id);
+            current = nodes.get(current.parentId);
+        }
+    });
+
+    // Racines = nœuds sans parent
+    const roots = [];
+    nodes.forEach(node => {
+        if (!node.parentId) roots.push(node);
+    });
+
+    // Tri : managers en premier (ceux qui ont des enfants)
+    roots.sort((a, b) => {
+        if (a.children.length > 0 && b.children.length === 0) return -1;
+        if (a.children.length === 0 && b.children.length > 0) return 1;
+        return getEmployeeName(a.employee).localeCompare(getEmployeeName(b.employee));
+    });
+
+    // Tri récursif des enfants
+    const sortChildren = (n) => {
+        n.children.sort((a, b) => getEmployeeName(a.employee).localeCompare(getEmployeeName(b.employee)));
+        n.children.forEach(sortChildren);
+    };
+    roots.forEach(sortChildren);
+
+    return roots;
+}
+
+function renderOrgNode(node, level) {
+    const emp = node.employee;
+    const name = getEmployeeName(emp);
+    const mat = getEmployeeMatricule(emp);
+    const fonction = getEmployeeFunction(emp);
+    const photo = getEmployeePhoto(emp);
+    const hasChildren = node.children.length > 0;
+    const initials = getEmployeeInitials(name);
+
+    const avatarHtml = renderEmployeeAvatar(photo, name, initials, "org-photo", "org-avatar-fallback");
+
+    const childrenHtml = hasChildren
+        ? `<div class="org-children">${node.children.map(c => renderOrgNode(c, level + 1)).join("")}</div>`
+        : "";
+
+    return `
+        <div class="org-node ${hasChildren ? "org-node--manager" : "org-node--collab"}" data-matricule="${escapeHtmlAttr(mat)}">
+            <div class="org-card" onclick="openOrgCard('${escapeHtmlAttr(mat)}')">
+                <div class="org-photo-wrapper">
+                    ${avatarHtml}
+                </div>
+                <div class="org-info">
+                    <div class="org-name">${escapeHtml(name)}</div>
+                    <div class="org-mat">${escapeHtml(mat)}</div>
+                    <div class="org-func">${escapeHtml(fonction)}</div>
+                </div>
+                ${hasChildren ? `<div class="org-badge" title="${node.children.length} collaborateur(s)">${node.children.length}</div>` : ""}
+            </div>
+            ${childrenHtml}
+        </div>
+    `;
+}
+
+function escapeHtml(s) {
+    return (s || "").toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function escapeHtmlAttr(s) {
+    return escapeHtml(s);
+}
+
+function renderEmployeeAvatar(photo, name, initials, imageClass, fallbackClass) {
+    if (!photo) {
+        return `<div class="${fallbackClass}" style="display:flex;">${escapeHtml(initials)}</div>`;
+    }
+
+    return `<img src="${escapeHtmlAttr(photo)}" alt="${escapeHtmlAttr(name)}" class="${imageClass} photo-expandable" loading="lazy" onclick="event.stopPropagation(); openImageLightbox(this)" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="${fallbackClass}" style="display:none;">${escapeHtml(initials)}</div>`;
+}
+
+function openImageLightbox(image) {
+    if (!image || !image.src) return;
+
+    const lightbox = document.getElementById("image-lightbox");
+    const lightboxImage = document.getElementById("image-lightbox-image");
+    if (!lightbox || !lightboxImage) return;
+
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt || "Photo du collaborateur";
+    lightbox.classList.add("show");
+    document.body.classList.add("lightbox-open");
+}
+
+function closeImageLightbox() {
+    const lightbox = document.getElementById("image-lightbox");
+    const lightboxImage = document.getElementById("image-lightbox-image");
+    if (!lightbox) return;
+
+    lightbox.classList.remove("show");
+    document.body.classList.remove("lightbox-open");
+    if (lightboxImage) lightboxImage.removeAttribute("src");
+}
+
+function attachOrgInteractions() {
+    // Rien de spécial pour l'instant : on gère via onclick inline
+}
+
+function openOrgCard(matricule) {
+    // Ouvre la fiche détaillée de l'employé
+    if (!matricule) return;
+    // Réutilise la modal employé
+    viewEmployeeDetails(matricule);
+}
+
+function searchInOrganigramme() {
+    const query = (document.getElementById("org-search-input").value || "").trim().toLowerCase();
+    const tree = document.getElementById("organigramme-tree");
+
+    if (!query) {
+        showToast("Entrez un matricule ou un nom", "info");
+        return;
+    }
+
+    clearOrganigrammeFilter();
+    const nodes = tree.querySelectorAll(".org-node");
+    const matches = [];
+    nodes.forEach(node => {
+        const mat = (node.dataset.matricule || "").toLowerCase();
+        const name = (node.querySelector(".org-name")?.textContent || "").toLowerCase();
+        if (mat.includes(query) || name.includes(query)) {
+            matches.push(node);
+        }
+    });
+
+    if (matches.length === 0) {
+        showToast("Aucun employé trouvé dans l'organigramme", "error");
+        return;
+    }
+
+    const visibleNodes = new Set();
+    const matchSet = new Set(matches);
+    matches.forEach(match => {
+        visibleNodes.add(match);
+        match.querySelectorAll(".org-node").forEach(descendant => visibleNodes.add(descendant));
+
+        let parent = match.parentElement.closest(".org-node");
+        while (parent) {
+            visibleNodes.add(parent);
+            parent = parent.parentElement.closest(".org-node");
+        }
+    });
+
+    nodes.forEach(node => {
+        const isVisible = visibleNodes.has(node);
+        node.classList.toggle("org-node--filtered-out", !isVisible);
+        node.classList.remove("org-node--first-visible", "org-node--last-visible");
+        node.querySelector(".org-card").classList.toggle("org-card--highlight", matchSet.has(node));
+    });
+
+    tree.querySelectorAll(".org-children").forEach(children => {
+        const visibleChildren = Array.from(children.children).filter(child => !child.classList.contains("org-node--filtered-out"));
+        if (visibleChildren.length > 0) {
+            visibleChildren[0].classList.add("org-node--first-visible");
+            visibleChildren[visibleChildren.length - 1].classList.add("org-node--last-visible");
+        }
+    });
+
+    const firstMatch = matches[0];
+    firstMatch.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    showToast(
+        matches.length === 1 ? "Employé localisé avec sa hiérarchie" : `${matches.length} personnes trouvées avec leur hiérarchie`,
+        "success"
+    );
+}
+
+function clearOrganigrammeFilter() {
+    const tree = document.getElementById("organigramme-tree");
+    tree.querySelectorAll(".org-node").forEach(node => {
+        node.classList.remove("org-node--filtered-out", "org-node--first-visible", "org-node--last-visible");
+        node.querySelector(".org-card").classList.remove("org-card--highlight");
+    });
+}
+
+function resetOrgSearch() {
+    document.getElementById("org-search-input").value = "";
+    clearOrganigrammeFilter();
+    if (!document.getElementById("organigramme-tree").querySelector(".org-node")) {
+        buildOrganigramme();
     }
 }
 
@@ -1013,7 +1175,6 @@ async function searchEmployees() {
     
     if (response.success && response.data) {
         filteredEmployees = response.data;
-        // Reformater les dates pour les résultats de recherche
         filteredEmployees = filteredEmployees.map(emp => {
             const cleaned = {...emp};
             if (cleaned["Date de naissance"]) {
@@ -1048,7 +1209,12 @@ function resetSearch() {
 // ========================================
 
 function viewEmployeeDetails(matricule) {
-    const employee = allEmployees.find(emp => emp["Matricule"] === matricule);
+    // Recherche tolérante sur le matricule
+    const target = (matricule || "").toString().trim().toLowerCase();
+    const employee = allEmployees.find(emp => {
+        const m = (getEmployeeMatricule(emp) || "").toString().trim().toLowerCase();
+        return m === target;
+    });
     
     if (!employee) {
         showToast("Employé non trouvé", "error");
@@ -1056,11 +1222,24 @@ function viewEmployeeDetails(matricule) {
     }
     
     const modalBody = document.getElementById("modal-body");
+    const name = getEmployeeName(employee);
+    const photo = getEmployeePhoto(employee);
+    const initials = getEmployeeInitials(name);
     
-    let html = `<h2>${getFieldValueByNormalizedName(employee, "Nom et prénoms") || "-"}</h2>`;
-    html += '<div class="form-grid">';
+    const photoHtml = renderEmployeeAvatar(photo, name, initials, "modal-photo", "modal-avatar-fallback");
     
-    // Colonnes à afficher
+    let html = `
+        <div class="modal-profile">
+            <div class="modal-photo-wrapper">${photoHtml}</div>
+            <div class="modal-profile-info">
+                <h2>${escapeHtml(name)}</h2>
+                <p class="modal-mat">${escapeHtml(getEmployeeMatricule(employee))}</p>
+                <p class="modal-func">${escapeHtml(getEmployeeFunction(employee))}</p>
+            </div>
+        </div>
+        <div class="form-grid">
+    `;
+    
     const displayFields = [
         "Matricule groupe",
         "Matricule",
@@ -1070,6 +1249,7 @@ function viewEmployeeDetails(matricule) {
         "Flotte",
         "Numéro collabo.",
         "Mail Collabo.",
+        "Matricule Manager",
         "Nom de manager",
         "Numéro manager",
         "Mail manager."
@@ -1079,57 +1259,8 @@ function viewEmployeeDetails(matricule) {
         let value = getFieldValueByNormalizedName(employee, field) || "-";
         html += `
             <div class="form-group">
-                <label>${field}</label>
-                <input type="text" value="${value}" readonly>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    modalBody.innerHTML = html;
-    
-    document.getElementById("employee-modal").classList.add("show");
-}
-
-// View collaborator details from search results
-function viewCollaboratorDetails(matricule) {
-    // Chercher le collaborateur dans allEmployees
-    let collaborator = allEmployees.find(emp => {
-        const empMatricule = getFieldValueByNormalizedName(emp, "Matricule");
-        return empMatricule === matricule;
-    });
-    
-    if (!collaborator) {
-        showToast("Collaborateur non trouvé", "error");
-        return;
-    }
-    
-    const modalBody = document.getElementById("modal-body");
-    
-    let html = `<h2>${getFieldValueByNormalizedName(collaborator, "Nom et prénoms") || "-"}</h2>`;
-    html += '<div class="form-grid">';
-    
-    // Mêmes colonnes que viewEmployeeDetails
-    const displayFields = [
-        "Matricule groupe",
-        "Matricule",
-        "Fonction",
-        "Statut",
-        "Niveau",
-        "Flotte",
-        "Numéro collabo.",
-        "Mail Collabo.",
-        "Nom de manager",
-        "Numéro manager",
-        "Mail manager."
-    ];
-    
-    displayFields.forEach((field) => {
-        let value = getFieldValueByNormalizedName(collaborator, field) || "-";
-        html += `
-            <div class="form-group">
-                <label>${field}</label>
-                <input type="text" value="${value}" readonly>
+                <label>${escapeHtml(field)}</label>
+                <input type="text" value="${escapeHtmlAttr(value)}" readonly>
             </div>
         `;
     });
@@ -1174,7 +1305,7 @@ function nextPage() {
 }
 
 // ========================================
-// RECHERCHE COLLABORATEUR (section spéciale)
+// RECHERCHE COLLABORATEUR
 // ========================================
 
 async function searchCollaborators() {
@@ -1193,11 +1324,8 @@ async function searchCollaborators() {
     if (response.success && response.data) {
         const collaborators = response.data.map(emp => {
             const cleaned = {...emp};
-
-            // Chercher la colonne "Date de naissance" (peut avoir des espaces)
             let dateOfBirth = null;
             let dateOfBirthKey = null;
-            
             for (const key in cleaned) {
                 if (key.trim().toLowerCase() === "date de naissance") {
                     dateOfBirth = cleaned[key];
@@ -1205,20 +1333,15 @@ async function searchCollaborators() {
                     break;
                 }
             }
-
             if (dateOfBirth) {
                 const dobInfo = getBirthDateInfo(dateOfBirth);
                 if (dateOfBirthKey) {
                     cleaned[dateOfBirthKey + "_formatted"] = dobInfo.formatted;
-                    cleaned["Date de naissance_valide"] = dobInfo.valid;
                     cleaned["Age"] = dobInfo.age;
                 }
             }
-
-            // Chercher la colonne "Date d'embauche"
             let hireDate = null;
             let hireDateKey = null;
-            
             for (const key in cleaned) {
                 if (key.trim().toLowerCase() === "date d'embauche") {
                     hireDate = cleaned[key];
@@ -1226,7 +1349,6 @@ async function searchCollaborators() {
                     break;
                 }
             }
-
             if (hireDate) {
                 const hireDateFormatted = formatDate(hireDate);
                 if (hireDateKey) {
@@ -1234,17 +1356,8 @@ async function searchCollaborators() {
                     cleaned["Anciennete"] = calculateTenure(hireDate);
                 }
             }
-
             return cleaned;
         });
-
-        console.log("[HRFlow] Recherche collaborateur - échantillon", collaborators.slice(0, 5).map((emp, index) => ({
-            index: index + 1,
-            matricule: getFieldValueByNormalizedName(emp, "Matricule"),
-            nom: getFieldValueByNormalizedName(emp, "Nom et prénoms"),
-            rawBirthDate: getFieldValueByNormalizedName(emp, "Date de naissance"),
-            parsedBirthInfo: getBirthDateInfo(getFieldValueByNormalizedName(emp, "Date de naissance"))
-        })));
 
         displayCollaboratorsTable(collaborators);
         showToast(response.message, "success");
@@ -1283,7 +1396,6 @@ function displayCollaboratorsTable(collaborators) {
 
     const normalizeLabel = (s) => s.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
 
-    // En-têtes
     tableHeaders.innerHTML = "";
     columns.forEach((col) => {
         const th = document.createElement("th");
@@ -1297,7 +1409,6 @@ function displayCollaboratorsTable(collaborators) {
     actionTh.setAttribute('data-col', 'actions');
     tableHeaders.appendChild(actionTh);
 
-    // Contenu
     tableBody.innerHTML = "";
     collaborators.forEach(collab => {
         const row = document.createElement("tr");
@@ -1306,18 +1417,16 @@ function displayCollaboratorsTable(collaborators) {
             const td = document.createElement("td");
             const colKey = normalizeLabel(col.label);
             td.setAttribute('data-col', colKey);
-
             let value = getFieldValueByNormalizedName(collab, col.key) || collab[col.key] || "-";
             td.textContent = value;
             row.appendChild(td);
         });
 
-        // Ajouter bouton Voir
         const actionTd = document.createElement("td");
         actionTd.setAttribute('data-col', 'actions');
         const matricule = getFieldValueByNormalizedName(collab, "Matricule") || "";
         actionTd.innerHTML = `
-            <button class="btn-action" onclick="viewCollaboratorDetails('${matricule}')" aria-label="Voir les détails" title="Voir les détails">
+            <button class="btn-action" onclick="viewEmployeeDetails('${escapeHtmlAttr(matricule)}')" aria-label="Voir les détails" title="Voir les détails">
                 <span class="btn-action-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
