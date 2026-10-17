@@ -197,13 +197,13 @@ function setupEventListeners() {
 
     const orgSearchButton = document.getElementById("org-search-btn");
     const orgResetButton = document.getElementById("org-reset-btn");
-    const orgSearchInput = document.getElementById("org-search-input");
+    const orgFilterInputs = document.querySelectorAll(".org-header-tools .search-input");
 
     orgSearchButton.addEventListener("click", searchInOrganigramme);
     orgResetButton.addEventListener("click", resetOrgSearch);
-    orgSearchInput.addEventListener("keydown", (event) => {
+    orgFilterInputs.forEach(input => input.addEventListener("keydown", (event) => {
         if (event.key === "Enter") searchInOrganigramme();
-    });
+    }));
     
     document.querySelector(".modal-close").addEventListener("click", closeModal);
     document.getElementById("employee-modal").addEventListener("click", (e) => {
@@ -828,6 +828,10 @@ function getEmployeeFunction(emp) {
     return getFieldValueByNormalizedName(emp, "Fonction") || emp["Fonction"] || "-";
 }
 
+function getEmployeeRattachement(emp) {
+    return getFieldValueByNormalizedName(emp, "Rattachement") || emp["Rattachement"] || "-";
+}
+
 function getEmployeePhoto(emp) {
     const raw = getFieldValueByNormalizedName(emp, "Photo") || emp["Photo"] || "";
     const photo = raw.toString().trim();
@@ -1082,27 +1086,54 @@ function openOrgCard(matricule) {
 }
 
 function searchInOrganigramme() {
-    const query = (document.getElementById("org-search-input").value || "").trim().toLowerCase();
+    const filters = {
+        matricule: normalizeSearchText(document.getElementById("org-filter-matricule").value),
+        name: normalizeSearchText(document.getElementById("org-filter-name").value),
+        fonction: normalizeSearchText(document.getElementById("org-filter-function").value),
+        rattachement: normalizeSearchText(document.getElementById("org-filter-rattachement").value)
+    };
     const tree = document.getElementById("organigramme-tree");
 
-    if (!query) {
-        showToast("Entrez un matricule ou un nom", "info");
+    if (!Object.values(filters).some(Boolean)) {
+        showToast("Renseignez au moins un filtre", "info");
         return;
     }
 
     clearOrganigrammeFilter();
     const nodes = tree.querySelectorAll(".org-node");
+    const employeesByMatricule = new Map(
+        allEmployees.map(employee => [
+            normalizeSearchText(getEmployeeMatricule(employee)),
+            employee
+        ])
+    );
     const matches = [];
     nodes.forEach(node => {
-        const mat = (node.dataset.matricule || "").toLowerCase();
-        const name = (node.querySelector(".org-name")?.textContent || "").toLowerCase();
-        if (mat.includes(query) || name.includes(query)) {
+        const matricule = normalizeSearchText(node.dataset.matricule || "");
+        const employee = employeesByMatricule.get(matricule);
+        const name = normalizeSearchText(employee
+            ? getEmployeeName(employee)
+            : node.querySelector(".org-name")?.textContent || "");
+        const fonction = normalizeSearchText(employee
+            ? getEmployeeFunction(employee)
+            : node.querySelector(".org-func")?.textContent || "");
+        const rattachement = normalizeSearchText(employee
+            ? getEmployeeRattachement(employee)
+            : "");
+
+        const matchesFilters =
+            (!filters.matricule || matricule.includes(filters.matricule))
+            && (!filters.name || name.includes(filters.name))
+            && (!filters.fonction || fonction.includes(filters.fonction))
+            && (!filters.rattachement || rattachement.includes(filters.rattachement));
+
+        if (matchesFilters) {
             matches.push(node);
         }
     });
 
     if (matches.length === 0) {
-        showToast("Aucun employé trouvé dans l'organigramme", "error");
+        showToast("Aucun résultat trouvé dans l'organigramme", "error");
         return;
     }
 
@@ -1142,6 +1173,15 @@ function searchInOrganigramme() {
     );
 }
 
+function normalizeSearchText(value) {
+    return (value || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
+
 function clearOrganigrammeFilter() {
     const tree = document.getElementById("organigramme-tree");
     tree.querySelectorAll(".org-node").forEach(node => {
@@ -1151,7 +1191,9 @@ function clearOrganigrammeFilter() {
 }
 
 function resetOrgSearch() {
-    document.getElementById("org-search-input").value = "";
+    document.querySelectorAll(".org-header-tools .search-input").forEach(input => {
+        input.value = "";
+    });
     clearOrganigrammeFilter();
     if (!document.getElementById("organigramme-tree").querySelector(".org-node")) {
         buildOrganigramme();
