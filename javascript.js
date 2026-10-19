@@ -41,7 +41,7 @@ function formatDate(dateString) {
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
     }
-    
+
     if (typeof dateString === 'string' && dateString.includes('T')) {
         const date = new Date(dateString);
         if (!isNaN(date.getTime())) {
@@ -873,6 +873,7 @@ function buildOrganigramme() {
     setTimeout(() => {
         try {
             const roots = buildOrgTreeData(allEmployees);
+            treeContainer.classList.remove("org-tree--level-groups");
             if (roots.length === 0) {
                 treeContainer.classList.remove("org-tree--single");
                 treeContainer.innerHTML = "";
@@ -932,6 +933,21 @@ function getEmployeeRattachement(emp) {
 
 function getEmployeeLevel(emp) {
     return getFieldValueByNormalizedName(emp, "Niveau") || emp["Niveau"] || "-";
+}
+
+function getRattachementColor(employee) {
+    const palette = [
+        "#2563eb", "#7c3aed", "#0891b2", "#059669",
+        "#d97706", "#db2777", "#dc2626", "#4f46e5",
+        "#0f766e", "#9333ea", "#c2410c", "#15803d"
+    ];
+    const rattachement = normalizeSearchText(getEmployeeRattachement(employee));
+    let hash = 0;
+    for (let index = 0; index < rattachement.length; index++) {
+        hash = ((hash << 5) - hash) + rattachement.charCodeAt(index);
+        hash |= 0;
+    }
+    return palette[Math.abs(hash) % palette.length];
 }
 
 function getEmployeePhoto(emp) {
@@ -1107,6 +1123,7 @@ function renderOrgNode(node, level) {
     const photo = getEmployeePhoto(emp);
     const hasChildren = node.children.length > 0;
     const initials = getEmployeeInitials(name);
+    const rattachementColor = getRattachementColor(emp);
 
     const avatarHtml = renderEmployeeAvatar(photo, name, initials, "org-photo", "org-avatar-fallback");
 
@@ -1116,7 +1133,7 @@ function renderOrgNode(node, level) {
 
     return `
         <div class="org-node ${hasChildren ? "org-node--manager" : "org-node--collab"}" data-matricule="${escapeHtmlAttr(mat)}">
-            <div class="org-card" onclick="openOrgCard('${escapeHtmlAttr(mat)}')">
+            <div class="org-card" style="--org-rattachement-color: ${rattachementColor};" onclick="openOrgCard('${escapeHtmlAttr(mat)}')">
                 <div class="org-photo-wrapper">
                     ${avatarHtml}
                 </div>
@@ -1207,9 +1224,20 @@ function searchInOrganigramme() {
         const selectedLevels = filters.niveau;
         if (selectedLevels.length > 1) {
             const roots = filterOrgTreeByFilters(buildOrgTreeData(allEmployees), filters);
+            const levelLabels = selectedLevels.map(level => {
+                const option = document.querySelector(`#org-filter-level option[value="${CSS.escape(level)}"]`);
+                return option ? option.textContent : level.toUpperCase();
+            });
             tree.classList.remove("org-tree--single");
-            tree.innerHTML = roots.map(root => renderOrgNode(root, 0)).join("");
+            tree.classList.add("org-tree--level-groups");
+            tree.innerHTML = `
+                <div class="org-tree-filter-label">
+                    Organigramme entre les niveaux : ${escapeHtml(levelLabels.join(" et "))}
+                </div>
+                ${roots.map(root => renderOrgNode(root, 0)).join("")}
+            `;
         } else {
+            tree.classList.remove("org-tree--level-groups");
             tree.classList.add("org-tree--single");
             tree.innerHTML = matches
                 .map(employee => ({
@@ -1391,6 +1419,7 @@ function filterOrgTreeByFilters(nodes, filters) {
 
 function clearOrganigrammeFilter() {
     const tree = document.getElementById("organigramme-tree");
+    tree.classList.remove("org-tree--level-groups");
     tree.querySelectorAll(".org-node").forEach(node => {
         node.classList.remove("org-node--filtered-out", "org-node--first-visible", "org-node--last-visible");
         node.querySelector(".org-card").classList.remove("org-card--highlight");

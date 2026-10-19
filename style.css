@@ -734,6 +734,25 @@ body {
     padding: 0;
 }
 
+.org-tree-filter-label {
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 9px 14px;
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    color: var(--dark);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.org-tree--level-groups > .org-node + .org-node {
+    margin-top: 19px;
+    padding-top: 19px;
+    border-top: 1px dashed var(--gray-300);
+}
+
 /* --- Structure arbre --- */
 .org-node {
     position: relative;
@@ -746,6 +765,7 @@ body {
 
 .org-children {
     display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: flex-start;
     gap: 0;
@@ -809,17 +829,17 @@ body {
 .org-node--filtered-out { display: none; }
 
 .org-card--highlight {
-    border-color: var(--warning) !important;
+    border-color: var(--org-rattachement-color, var(--warning)) !important;
     box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22), var(--shadow-lg);
 }
 
 /* --- Carte d'un employé --- */
 .org-card {
     background: var(--white);
-    border: 2px solid var(--gray-300);
+    border: 2px solid var(--org-rattachement-color, var(--gray-300));
     border-radius: var(--radius-lg);
     padding: 8px 8px 10px;
-    width: 140px;
+    width: 128px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -838,8 +858,8 @@ body {
 }
 
 .org-node--manager > .org-card {
-    border-color: var(--primary);
-    background: linear-gradient(180deg, var(--primary-light) 0%, var(--white) 60%);
+    border-color: var(--org-rattachement-color, var(--primary));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--org-rattachement-color, var(--primary)) 14%, white) 0%, var(--white) 60%);
     box-shadow: 0 4px 10px rgba(0,102,255,0.15);
 }
 
