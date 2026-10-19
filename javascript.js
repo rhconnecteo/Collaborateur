@@ -2,7 +2,7 @@
 // CONFIGURATION API
 // ========================================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwiT-8kyrAfAt6xMdLJUWmG6as0YYxjtVwdMbQKFKMNMzead_zdujcQwjNGDBDUWYUm9g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx4aVV-Y5K5ZcCaymqGa9mFCbRNVZBalzWPsNR16GtDH25RKtE-jG_TknuuQO5G60_7HA/exec";
 
 // ========================================
 // VARIABLES GLOBALES
@@ -197,10 +197,20 @@ function setupEventListeners() {
 
     const orgSearchButton = document.getElementById("org-search-btn");
     const orgResetButton = document.getElementById("org-reset-btn");
+    const orgSingleView = document.getElementById("org-single-view");
     const orgFilterInputs = document.querySelectorAll(".org-header-tools .search-input");
 
     orgSearchButton.addEventListener("click", searchInOrganigramme);
     orgResetButton.addEventListener("click", resetOrgSearch);
+    document.querySelectorAll(".panel-search").forEach(input => {
+        input.addEventListener(input.tagName === "SELECT" ? "change" : "input", filterStatItems);
+    });
+    orgSingleView.addEventListener("change", () => {
+        buildOrganigramme();
+        if (hasOrgSearchFilters()) {
+            setTimeout(searchInOrganigramme, 150);
+        }
+    });
     orgFilterInputs.forEach(input => input.addEventListener("keydown", (event) => {
         if (event.key === "Enter") searchInOrganigramme();
     }));
@@ -250,7 +260,8 @@ function filterStatItems(event) {
     const input = event.target;
     const targetId = input.getAttribute("data-target");
     const container = document.getElementById(targetId);
-    const query = input.value.trim().toLowerCase();
+    const query = normalizeSearchText(input.value);
+    const exactMatch = input.dataset.match === "exact";
     
     if (!container) return;
     
@@ -259,9 +270,10 @@ function filterStatItems(event) {
     
     items.forEach(item => {
         const label = item.querySelector(".stat-label");
-        const labelText = label ? label.textContent.toLowerCase() : "";
+        const labelText = label ? normalizeSearchText(label.textContent) : "";
+        const isMatch = exactMatch ? labelText === query : labelText.includes(query);
         
-        if (query === "" || labelText.includes(query)) {
+        if (query === "" || isMatch) {
             item.classList.remove("hidden");
             visibleCount++;
         } else {
@@ -416,6 +428,7 @@ async function loadAllEmployees() {
         window._extraKPIs = extraKPIs;
 
         displayDashboard();
+        populateOrgFilterSelects();
         showToast(`${allEmployees.length} profils chargés avec succès`, "success");
     }
 
@@ -431,6 +444,8 @@ function displayDashboard() {
     displayStatusStatistics();
     displayRattachmentStatistics();
     displayFunctionStatistics();
+    displayLevelStatistics();
+    populateStatFilterSelects();
     displayAgeStatistics();
     displayTenureStatistics();
 }
@@ -609,6 +624,75 @@ function displayFunctionStatistics() {
     container.innerHTML = html;
 }
 
+function displayLevelStatistics() {
+    const container = document.getElementById("niveau-chart");
+    const levelMap = {};
+
+    allEmployees.forEach(emp => {
+        const niveau = getEmployeeLevel(emp).toString().trim();
+        if (niveau && niveau !== "-") {
+            levelMap[niveau] = (levelMap[niveau] || 0) + 1;
+        }
+    });
+
+    const sorted = Object.entries(levelMap).sort((a, b) => b[1] - a[1]);
+    if (sorted.length === 0) {
+        container.innerHTML = '<p class="loading">Aucun niveau trouvé</p>';
+        return;
+    }
+
+    container.innerHTML = sorted.map(([niveau, count]) => {
+        const percentage = ((count / allEmployees.length) * 100).toFixed(1);
+        return `
+            <div class="stat-item">
+                <span class="stat-label">${escapeHtml(niveau)}</span>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" style="width: ${percentage}%"></div>
+                </div>
+                <span class="stat-value">${count} (${percentage}%)</span>
+            </div>
+        `;
+    }).join("");
+}
+
+function populateStatFilterSelects() {
+    const filters = [
+        {
+            id: "rattach-chart",
+            values: allEmployees.map(employee => getEmployeeRattachement(employee)),
+            emptyLabel: "Tous les rattachements"
+        },
+        {
+            id: "fonction-chart",
+            values: allEmployees.map(employee => getEmployeeFunction(employee)),
+            emptyLabel: "Toutes les fonctions"
+        },
+        {
+            id: "niveau-chart",
+            values: allEmployees.map(employee => getEmployeeLevel(employee)),
+            emptyLabel: "Tous les niveaux"
+        }
+    ];
+
+    filters.forEach(({ id, values, emptyLabel }) => {
+        const select = document.querySelector(`.stat-filter-select[data-target="${id}"]`);
+        if (!select) return;
+
+        const uniqueValues = [...new Set(values
+            .map(value => value.toString().trim())
+            .filter(value => value && value !== "-"))]
+            .sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+
+        select.innerHTML = `<option value="">${emptyLabel}</option>`;
+        uniqueValues.forEach(value => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
+        });
+    });
+}
+
 function displayAgeStatistics() {
     const container = document.getElementById("age-chart");
     const ageRanges = {
@@ -773,6 +857,7 @@ function buildOrganigramme() {
     const treeContainer = document.getElementById("organigramme-tree");
     const loadingEl = document.getElementById("org-loading");
     const emptyEl = document.getElementById("org-empty");
+    const singleView = document.getElementById("org-single-view")?.checked === true;
 
     if (!allEmployees || allEmployees.length === 0) {
         loadingEl.style.display = "none";
@@ -789,10 +874,23 @@ function buildOrganigramme() {
         try {
             const roots = buildOrgTreeData(allEmployees);
             if (roots.length === 0) {
+                treeContainer.classList.remove("org-tree--single");
                 treeContainer.innerHTML = "";
                 emptyEl.style.display = "block";
             } else {
-                const html = roots.map(root => renderOrgNode(root, 0)).join("");
+                treeContainer.classList.toggle("org-tree--single", singleView);
+                const html = singleView
+                    ? allEmployees
+                        .map(employee => ({
+                            id: getEmployeeMatricule(employee),
+                            employee,
+                            children: [],
+                            parentId: null
+                        }))
+                        .filter(node => node.id)
+                        .map(node => renderOrgNode(node, 0))
+                        .join("")
+                    : roots.map(root => renderOrgNode(root, 0)).join("");
                 treeContainer.innerHTML = html;
                 attachOrgInteractions();
             }
@@ -830,6 +928,10 @@ function getEmployeeFunction(emp) {
 
 function getEmployeeRattachement(emp) {
     return getFieldValueByNormalizedName(emp, "Rattachement") || emp["Rattachement"] || "-";
+}
+
+function getEmployeeLevel(emp) {
+    return getFieldValueByNormalizedName(emp, "Niveau") || emp["Niveau"] || "-";
 }
 
 function getEmployeePhoto(emp) {
@@ -1086,16 +1188,45 @@ function openOrgCard(matricule) {
 }
 
 function searchInOrganigramme() {
-    const filters = {
-        matricule: normalizeSearchText(document.getElementById("org-filter-matricule").value),
-        name: normalizeSearchText(document.getElementById("org-filter-name").value),
-        fonction: normalizeSearchText(document.getElementById("org-filter-function").value),
-        rattachement: normalizeSearchText(document.getElementById("org-filter-rattachement").value)
-    };
+    const filters = getOrgSearchFilters();
     const tree = document.getElementById("organigramme-tree");
+    const singleView = document.getElementById("org-single-view")?.checked === true;
 
-    if (!Object.values(filters).some(Boolean)) {
+    if (!hasOrgSearchFilters()) {
         showToast("Renseignez au moins un filtre", "info");
+        return;
+    }
+
+    if (singleView) {
+        const matches = allEmployees.filter(employee => matchesOrgFilters(employee, filters));
+        if (matches.length === 0) {
+            showToast("Aucun résultat trouvé dans l'organigramme", "error");
+            return;
+        }
+
+        const selectedLevels = filters.niveau;
+        if (selectedLevels.length > 1) {
+            const roots = filterOrgTreeByFilters(buildOrgTreeData(allEmployees), filters);
+            tree.classList.remove("org-tree--single");
+            tree.innerHTML = roots.map(root => renderOrgNode(root, 0)).join("");
+        } else {
+            tree.classList.add("org-tree--single");
+            tree.innerHTML = matches
+                .map(employee => ({
+                    id: getEmployeeMatricule(employee),
+                    employee,
+                    children: [],
+                    parentId: null
+                }))
+                .filter(node => node.id)
+                .map(node => renderOrgNode(node, 0))
+                .join("");
+        }
+        tree.querySelectorAll(".org-card").forEach(card => card.classList.add("org-card--highlight"));
+        showToast(
+            matches.length === 1 ? "Employé localisé en vue unique" : `${matches.length} personnes trouvées en vue unique`,
+            "success"
+        );
         return;
     }
 
@@ -1120,12 +1251,17 @@ function searchInOrganigramme() {
         const rattachement = normalizeSearchText(employee
             ? getEmployeeRattachement(employee)
             : "");
+        const niveau = normalizeSearchText(employee
+            ? getEmployeeLevel(employee)
+            : "");
 
+        const matchesLevel = filters.niveau.length === 0 || filters.niveau.includes(niveau);
         const matchesFilters =
             (!filters.matricule || matricule.includes(filters.matricule))
             && (!filters.name || name.includes(filters.name))
-            && (!filters.fonction || fonction.includes(filters.fonction))
-            && (!filters.rattachement || rattachement.includes(filters.rattachement));
+            && (!filters.fonction || fonction === filters.fonction)
+            && (!filters.rattachement || rattachement === filters.rattachement)
+            && matchesLevel;
 
         if (matchesFilters) {
             matches.push(node);
@@ -1141,7 +1277,6 @@ function searchInOrganigramme() {
     const matchSet = new Set(matches);
     matches.forEach(match => {
         visibleNodes.add(match);
-        match.querySelectorAll(".org-node").forEach(descendant => visibleNodes.add(descendant));
 
         let parent = match.parentElement.closest(".org-node");
         while (parent) {
@@ -1182,6 +1317,78 @@ function normalizeSearchText(value) {
         .replace(/[\u0300-\u036f]/g, "");
 }
 
+function getOrgSearchFilters() {
+    const levelSelect = document.getElementById("org-filter-level");
+    return {
+        matricule: normalizeSearchText(document.getElementById("org-filter-matricule").value),
+        name: normalizeSearchText(document.getElementById("org-filter-name").value),
+        fonction: normalizeSearchText(document.getElementById("org-filter-function").value),
+        rattachement: normalizeSearchText(document.getElementById("org-filter-rattachement").value),
+        niveau: Array.from(levelSelect.selectedOptions)
+            .map(option => normalizeSearchText(option.value))
+            .filter(Boolean)
+    };
+}
+
+function populateOrgFilterSelects() {
+    const filters = [
+        { id: "org-filter-function", label: "Fonction", getValue: getEmployeeFunction },
+        { id: "org-filter-rattachement", label: "Rattachement", getValue: getEmployeeRattachement },
+        { id: "org-filter-level", label: "Niveau", getValue: getEmployeeLevel }
+    ];
+
+    filters.forEach(({ id, label, getValue }) => {
+        const select = document.getElementById(id);
+        if (!select) return;
+
+        const values = [...new Set(allEmployees
+            .map(employee => getValue(employee).toString().trim())
+            .filter(value => value && value !== "-"))]
+            .sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+
+        select.innerHTML = `<option value="">${id === "org-filter-level" ? `${label} (Ctrl/Cmd pour plusieurs)` : label}</option>`;
+        values.forEach(value => {
+            const option = document.createElement("option");
+            option.value = normalizeSearchText(value);
+            option.textContent = value;
+            select.appendChild(option);
+        });
+    });
+}
+
+function hasOrgSearchFilters() {
+    return Object.values(getOrgSearchFilters()).some(value => Array.isArray(value) ? value.length > 0 : Boolean(value));
+}
+
+function matchesOrgFilters(employee, filters) {
+    const matricule = normalizeSearchText(getEmployeeMatricule(employee));
+    const name = normalizeSearchText(getEmployeeName(employee));
+    const fonction = normalizeSearchText(getEmployeeFunction(employee));
+    const rattachement = normalizeSearchText(getEmployeeRattachement(employee));
+    const niveau = normalizeSearchText(getEmployeeLevel(employee));
+
+    const matchesLevel = filters.niveau.length === 0 || filters.niveau.includes(niveau);
+
+    return (!filters.matricule || matricule.includes(filters.matricule))
+        && (!filters.name || name.includes(filters.name))
+        && (!filters.fonction || fonction === filters.fonction)
+        && (!filters.rattachement || rattachement === filters.rattachement)
+        && matchesLevel;
+}
+
+function filterOrgTreeByFilters(nodes, filters) {
+    return nodes.reduce((filtered, node) => {
+        const children = filterOrgTreeByFilters(node.children, filters);
+        const nodeMatches = matchesOrgFilters(node.employee, filters);
+        if (nodeMatches) {
+            filtered.push({ ...node, children });
+        } else {
+            filtered.push(...children);
+        }
+        return filtered;
+    }, []);
+}
+
 function clearOrganigrammeFilter() {
     const tree = document.getElementById("organigramme-tree");
     tree.querySelectorAll(".org-node").forEach(node => {
@@ -1195,9 +1402,7 @@ function resetOrgSearch() {
         input.value = "";
     });
     clearOrganigrammeFilter();
-    if (!document.getElementById("organigramme-tree").querySelector(".org-node")) {
-        buildOrganigramme();
-    }
+    buildOrganigramme();
 }
 
 // ========================================

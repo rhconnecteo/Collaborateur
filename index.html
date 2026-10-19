@@ -49,8 +49,19 @@
                     <div class="org-header-tools">
                         <input type="search" id="org-filter-matricule" class="search-input" placeholder="Matricule" autocomplete="off">
                         <input type="search" id="org-filter-name" class="search-input" placeholder="Nom et prénoms" autocomplete="off">
-                        <input type="search" id="org-filter-function" class="search-input" placeholder="Fonction" autocomplete="off">
-                        <input type="search" id="org-filter-rattachement" class="search-input" placeholder="Rattachement" autocomplete="off">
+                        <select id="org-filter-function" class="search-input org-filter-select" aria-label="Filtrer par fonction">
+                            <option value="">Fonction</option>
+                        </select>
+                        <select id="org-filter-rattachement" class="search-input org-filter-select" aria-label="Filtrer par rattachement">
+                            <option value="">Rattachement</option>
+                        </select>
+                        <select id="org-filter-level" class="search-input org-filter-select org-level-multi-select" aria-label="Filtrer par niveau" multiple size="1">
+                            <option value="">Niveau (Ctrl/Cmd pour plusieurs)</option>
+                        </select>
+                        <label class="org-single-view-toggle" for="org-single-view">
+                            <input type="checkbox" id="org-single-view">
+                            <span>Vue unique</span>
+                        </label>
                         <button class="btn btn-primary" id="org-search-btn" type="button">Rechercher</button>
                         <button class="btn btn-secondary" id="org-reset-btn" type="button">Tout voir</button>
                     </div>
@@ -221,9 +232,11 @@
                     <div class="stat-panel stat-panel--rattach">
                         <div class="panel-header">
                             <h3>🏢 Répartition par Rattachement</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="rattach-chart">
+                            <select class="panel-search stat-filter-select" data-target="rattach-chart" data-match="exact" aria-label="Filtrer par rattachement">
+                                <option value="">Tous les rattachements</option>
+                            </select>
                         </div>
-                        <div id="rattach-chart" class="stat-items">
+                        <div id="rattach-chart" class="stat-items stats-scroll-panel">
                             <p class="loading">Chargement...</p>
                         </div>
                     </div>
@@ -231,9 +244,23 @@
                     <div class="stat-panel stat-panel--fonction">
                         <div class="panel-header">
                             <h3>💼 Fonctions</h3>
-                            <input type="text" class="panel-search" placeholder="Rechercher..." data-target="fonction-chart">
+                            <select class="panel-search stat-filter-select" data-target="fonction-chart" data-match="exact" aria-label="Filtrer par fonction">
+                                <option value="">Toutes les fonctions</option>
+                            </select>
                         </div>
-                        <div id="fonction-chart" class="stat-items fonction-items">
+                        <div id="fonction-chart" class="stat-items fonction-items stats-scroll-panel">
+                            <p class="loading">Chargement...</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-panel stat-panel--niveau">
+                        <div class="panel-header">
+                            <h3>📊 Répartition par Niveau</h3>
+                            <select class="panel-search stat-filter-select" data-target="niveau-chart" data-match="exact" aria-label="Filtrer par niveau">
+                                <option value="">Tous les niveaux</option>
+                            </select>
+                        </div>
+                        <div id="niveau-chart" class="stat-items stats-scroll-panel">
                             <p class="loading">Chargement...</p>
                         </div>
                     </div>

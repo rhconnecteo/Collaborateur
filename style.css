@@ -235,15 +235,33 @@ body {
     gap: 6px;
     min-width: 0;
     flex-wrap: wrap;
+    overflow: visible;
+    max-width: 100%;
 }
 
 .main-content.organigramme-active .org-header-tools {
     display: flex;
 }
 
+.main-content.organigramme-active .header-left > h2 {
+    display: none;
+}
+
 .org-header-tools .search-input {
     width: clamp(100px, 10vw, 150px);
-    min-width: 0;
+    min-width: 125px;
+    flex: 0 0 auto;
+}
+
+.org-header-tools .org-filter-select {
+    width: clamp(125px, 12vw, 165px);
+    cursor: pointer;
+    background: var(--white);
+}
+
+.org-header-tools .org-level-multi-select {
+    min-height: 36px;
+    padding-right: 24px;
 }
 
 .org-header-tools .search-input {
@@ -255,6 +273,24 @@ body {
 .org-header-tools .btn {
     padding: 8px 10px;
     font-size: 11px;
+    flex: 0 0 auto;
+}
+
+.org-single-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    color: var(--dark);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.org-single-view-toggle input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--primary);
 }
 
 .header-left h2 {
@@ -494,6 +530,7 @@ body {
 .stat-panel--statut { border-top: 4px solid #10b981; }
 .stat-panel--rattach { border-top: 4px solid #36A2EB; }
 .stat-panel--fonction { border-top: 4px solid #FFCE56; }
+.stat-panel--niveau { border-top: 4px solid #8b5cf6; }
 .stat-panel--age { border-top: 4px solid #8b5cf6; }
 .stat-panel--tenure { border-top: 4px solid #f97316; }
 
@@ -523,6 +560,12 @@ body {
     font-family: inherit;
 }
 
+.stat-filter-select {
+    width: 100%;
+    background: var(--white);
+    color: var(--dark);
+}
+
 .panel-search:focus { border-color: #10b981; }
 
 .stat-items {
@@ -534,6 +577,14 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.stats-scroll-panel {
+    max-height: 280px;
+    min-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
 }
 
 .stat-item {
@@ -669,6 +720,18 @@ body {
 .org-tree {
     overflow-x: auto;
     padding: var(--spacing-md) 0;
+}
+
+.org-tree--single {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.org-tree--single .org-node {
+    padding: 0;
 }
 
 /* --- Structure arbre --- */
@@ -1470,13 +1533,12 @@ body.lightbox-open {
 
     .header-left h2 { font-size: 18px; }
     .main-content.organigramme-active .org-header-tools {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        display: flex;
         width: 100%;
         order: 2;
     }
     .org-header-tools .btn { min-height: 34px; padding: 6px 8px; }
-    .org-header-tools .search-input { width: 100%; font-size: 10px; padding: 7px 8px; }
+    .org-header-tools .search-input { width: 125px; font-size: 10px; padding: 7px 8px; }
 
     .header-right { width: auto; justify-content: flex-end; margin-left: auto; }
     .date-time { font-size: 11px; padding: 4px 8px; }
@@ -1546,9 +1608,9 @@ body.lightbox-open {
     .header-right { gap: 4px; }
     .date-time { font-size: 9px; padding: 4px 6px; }
     .main-content.organigramme-active .org-header-tools {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: flex;
     }
-    .org-header-tools .btn { width: 100%; }
+    .org-header-tools .btn { width: auto; }
 
     .kpi-category--effectifs .category-grid,
     .kpi-category--organisation .category-grid,
