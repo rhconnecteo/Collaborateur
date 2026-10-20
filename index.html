@@ -49,15 +49,21 @@
                     <div class="org-header-tools">
                         <input type="search" id="org-filter-matricule" class="search-input" placeholder="Matricule" autocomplete="off">
                         <input type="search" id="org-filter-name" class="search-input" placeholder="Nom et prénoms" autocomplete="off">
-                        <select id="org-filter-function" class="search-input org-filter-select" aria-label="Filtrer par fonction">
-                            <option value="">Fonction</option>
-                        </select>
-                        <select id="org-filter-rattachement" class="search-input org-filter-select" aria-label="Filtrer par rattachement">
-                            <option value="">Rattachement</option>
-                        </select>
-                        <select id="org-filter-level" class="search-input org-filter-select org-level-multi-select" aria-label="Filtrer par niveau" multiple size="1">
-                            <option value="">Niveau (Ctrl/Cmd pour plusieurs)</option>
-                        </select>
+                        <div class="org-search-control" data-filter="fonction" data-placeholder="Fonction">
+                            <input id="org-filter-function" class="search-input org-search-input" placeholder="Fonction" autocomplete="off">
+                            <div class="org-search-suggestions"></div>
+                            <div class="org-search-chips"></div>
+                        </div>
+                        <div class="org-search-control" data-filter="rattachement" data-placeholder="Rattachement">
+                            <input id="org-filter-rattachement" class="search-input org-search-input" placeholder="Rattachement" autocomplete="off">
+                            <div class="org-search-suggestions"></div>
+                            <div class="org-search-chips"></div>
+                        </div>
+                        <div class="org-search-control" data-filter="niveau" data-placeholder="Niveau">
+                            <input id="org-filter-level" class="search-input org-search-input" placeholder="Niveau" autocomplete="off">
+                            <div class="org-search-suggestions"></div>
+                            <div class="org-search-chips"></div>
+                        </div>
                         <label class="org-single-view-toggle" for="org-single-view">
                             <input type="checkbox" id="org-single-view">
                             <span>Vue unique</span>

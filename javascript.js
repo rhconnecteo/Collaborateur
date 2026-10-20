@@ -211,9 +211,33 @@ function setupEventListeners() {
             setTimeout(searchInOrganigramme, 150);
         }
     });
-    orgFilterInputs.forEach(input => input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") searchInOrganigramme();
-    }));
+    orgFilterInputs.forEach(input => {
+        if (!input.classList.contains("org-search-input")) {
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") searchInOrganigramme();
+            });
+        }
+    });
+    document.querySelectorAll(".org-search-control").forEach(control => {
+        control._selectedValues = [];
+        control._options = [];
+        const input = control.querySelector(".org-search-input");
+        input.addEventListener("input", () => openOrgSuggestions(control));
+        input.addEventListener("focus", () => openOrgSuggestions(control));
+        input.addEventListener("click", () => openOrgSuggestions(control));
+        input.addEventListener("keydown", event => {
+            if (event.key === "Enter" && input.value.trim()) {
+                addOrgSearchValue(control, input.value.trim());
+                event.preventDefault();
+            }
+        });
+    });
+    document.addEventListener("click", event => {
+        const clickedControl = event.target.closest(".org-search-control");
+        document.querySelectorAll(".org-search-control").forEach(control => {
+            if (control !== clickedControl) control.classList.remove("is-open");
+        });
+    });
     
     document.querySelector(".modal-close").addEventListener("click", closeModal);
     document.getElementById("employee-modal").addEventListener("click", (e) => {
@@ -1224,18 +1248,9 @@ function searchInOrganigramme() {
         const selectedLevels = filters.niveau;
         if (selectedLevels.length > 1) {
             const roots = filterOrgTreeByFilters(buildOrgTreeData(allEmployees), filters);
-            const levelLabels = selectedLevels.map(level => {
-                const option = document.querySelector(`#org-filter-level option[value="${CSS.escape(level)}"]`);
-                return option ? option.textContent : level.toUpperCase();
-            });
             tree.classList.remove("org-tree--single");
             tree.classList.add("org-tree--level-groups");
-            tree.innerHTML = `
-                <div class="org-tree-filter-label">
-                    Organigramme entre les niveaux : ${escapeHtml(levelLabels.join(" et "))}
-                </div>
-                ${roots.map(root => renderOrgNode(root, 0)).join("")}
-            `;
+            tree.innerHTML = roots.map(root => renderOrgNode(root, 0)).join("");
         } else {
             tree.classList.remove("org-tree--level-groups");
             tree.classList.add("org-tree--single");
@@ -1283,12 +1298,14 @@ function searchInOrganigramme() {
             ? getEmployeeLevel(employee)
             : "");
 
+        const matchesFunction = filters.fonction.length === 0 || filters.fonction.includes(fonction);
+        const matchesRattachement = filters.rattachement.length === 0 || filters.rattachement.includes(rattachement);
         const matchesLevel = filters.niveau.length === 0 || filters.niveau.includes(niveau);
         const matchesFilters =
             (!filters.matricule || matricule.includes(filters.matricule))
             && (!filters.name || name.includes(filters.name))
-            && (!filters.fonction || fonction === filters.fonction)
-            && (!filters.rattachement || rattachement === filters.rattachement)
+            && matchesFunction
+            && matchesRattachement
             && matchesLevel;
 
         if (matchesFilters) {
@@ -1346,15 +1363,12 @@ function normalizeSearchText(value) {
 }
 
 function getOrgSearchFilters() {
-    const levelSelect = document.getElementById("org-filter-level");
     return {
         matricule: normalizeSearchText(document.getElementById("org-filter-matricule").value),
         name: normalizeSearchText(document.getElementById("org-filter-name").value),
-        fonction: normalizeSearchText(document.getElementById("org-filter-function").value),
-        rattachement: normalizeSearchText(document.getElementById("org-filter-rattachement").value),
-        niveau: Array.from(levelSelect.selectedOptions)
-            .map(option => normalizeSearchText(option.value))
-            .filter(Boolean)
+        fonction: getOrgSearchValues("fonction"),
+        rattachement: getOrgSearchValues("rattachement"),
+        niveau: getOrgSearchValues("niveau")
     };
 }
 
@@ -1366,26 +1380,83 @@ function populateOrgFilterSelects() {
     ];
 
     filters.forEach(({ id, label, getValue }) => {
-        const select = document.getElementById(id);
-        if (!select) return;
+        const filterNames = {
+            "org-filter-function": "fonction",
+            "org-filter-rattachement": "rattachement",
+            "org-filter-level": "niveau"
+        };
+        const filter = filterNames[id];
+        const control = document.querySelector(`.org-search-control[data-filter="${filter}"]`);
+        if (!control) return;
 
         const values = [...new Set(allEmployees
             .map(employee => getValue(employee).toString().trim())
             .filter(value => value && value !== "-"))]
             .sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 
-        select.innerHTML = `<option value="">${id === "org-filter-level" ? `${label} (Ctrl/Cmd pour plusieurs)` : label}</option>`;
-        values.forEach(value => {
-            const option = document.createElement("option");
-            option.value = normalizeSearchText(value);
-            option.textContent = value;
-            select.appendChild(option);
-        });
+        control._options = values;
+        renderOrgSuggestions(control);
     });
+}
+
+function getOrgSearchValues(filter) {
+    const control = document.querySelector(`.org-search-control[data-filter="${filter}"]`);
+    if (!control) return [];
+    const values = [...(control._selectedValues || [])];
+    const typedValue = normalizeSearchText(control.querySelector(".org-search-input")?.value);
+    if (typedValue && !values.includes(typedValue)) values.push(typedValue);
+    return values;
 }
 
 function hasOrgSearchFilters() {
     return Object.values(getOrgSearchFilters()).some(value => Array.isArray(value) ? value.length > 0 : Boolean(value));
+}
+
+function renderOrgSuggestions(control) {
+    const input = control.querySelector(".org-search-input");
+    const suggestions = control.querySelector(".org-search-suggestions");
+    const query = normalizeSearchText(input.value);
+    const selected = control._selectedValues || [];
+    const values = (control._options || []).filter(value =>
+        !selected.includes(normalizeSearchText(value))
+        && (!query || normalizeSearchText(value).includes(query))
+    ).slice(0, 20);
+    suggestions.innerHTML = values.map(value =>
+        `<button type="button" class="org-search-suggestion" data-value="${escapeHtmlAttr(value)}">${escapeHtml(value)}</button>`
+    ).join("");
+    suggestions.querySelectorAll(".org-search-suggestion").forEach(button => {
+        button.addEventListener("mousedown", event => event.preventDefault());
+        button.addEventListener("click", () => addOrgSearchValue(control, button.dataset.value));
+    });
+}
+
+function openOrgSuggestions(control) {
+    control.classList.add("is-open");
+    renderOrgSuggestions(control);
+}
+
+function addOrgSearchValue(control, value) {
+    const normalized = normalizeSearchText(value);
+    if (!normalized) return;
+    if (!control._selectedValues.includes(normalized)) control._selectedValues.push(normalized);
+    control.querySelector(".org-search-input").value = "";
+    control.classList.add("is-open");
+    renderOrgChips(control);
+    renderOrgSuggestions(control);
+}
+
+function renderOrgChips(control) {
+    const chips = control.querySelector(".org-search-chips");
+    chips.innerHTML = control._selectedValues.map(value =>
+        `<button type="button" class="org-search-chip" data-value="${escapeHtmlAttr(value)}">${escapeHtml(value)} ×</button>`
+    ).join("");
+    chips.querySelectorAll(".org-search-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            control._selectedValues = control._selectedValues.filter(value => value !== chip.dataset.value);
+            renderOrgChips(control);
+            renderOrgSuggestions(control);
+        });
+    });
 }
 
 function matchesOrgFilters(employee, filters) {
@@ -1395,12 +1466,14 @@ function matchesOrgFilters(employee, filters) {
     const rattachement = normalizeSearchText(getEmployeeRattachement(employee));
     const niveau = normalizeSearchText(getEmployeeLevel(employee));
 
+    const matchesFunction = filters.fonction.length === 0 || filters.fonction.includes(fonction);
+    const matchesRattachement = filters.rattachement.length === 0 || filters.rattachement.includes(rattachement);
     const matchesLevel = filters.niveau.length === 0 || filters.niveau.includes(niveau);
 
     return (!filters.matricule || matricule.includes(filters.matricule))
         && (!filters.name || name.includes(filters.name))
-        && (!filters.fonction || fonction === filters.fonction)
-        && (!filters.rattachement || rattachement === filters.rattachement)
+        && matchesFunction
+        && matchesRattachement
         && matchesLevel;
 }
 
@@ -1429,6 +1502,11 @@ function clearOrganigrammeFilter() {
 function resetOrgSearch() {
     document.querySelectorAll(".org-header-tools .search-input").forEach(input => {
         input.value = "";
+    });
+    document.querySelectorAll(".org-search-control").forEach(control => {
+        control._selectedValues = [];
+        renderOrgChips(control);
+        renderOrgSuggestions(control);
     });
     clearOrganigrammeFilter();
     buildOrganigramme();

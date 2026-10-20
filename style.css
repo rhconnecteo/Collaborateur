@@ -259,9 +259,119 @@ body {
     background: var(--white);
 }
 
+.org-search-control {
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(125px, 12vw, 165px);
+    z-index: 1;
+}
+
+.org-search-control.is-open {
+    z-index: 30;
+}
+
+.org-search-control .org-search-input {
+    width: 100%;
+}
+
+.org-search-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+    max-height: 220px;
+    overflow-y: auto;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+}
+
+.org-search-control.is-open .org-search-suggestions {
+    display: flex;
+}
+
+.org-search-suggestion {
+    border: 0;
+    background: var(--white);
+    padding: 8px 10px;
+    text-align: left;
+    color: var(--dark);
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.org-search-suggestion:hover {
+    background: var(--primary-light);
+}
+
+.org-search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 3px;
+}
+
+.org-search-chip {
+    border: 0;
+    border-radius: 999px;
+    padding: 2px 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 9px;
+    cursor: pointer;
+}
+
+.org-filter-control {
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(125px, 12vw, 165px);
+}
+
+.org-filter-control::after {
+    content: attr(data-selected);
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    right: 24px;
+    overflow: hidden;
+    color: var(--dark);
+    font-size: 11px;
+    line-height: 1;
+    pointer-events: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateY(-50%);
+}
+
+.org-filter-control .org-filter-select {
+    width: 100%;
+    color: transparent;
+    text-shadow: none;
+}
+
+.org-filter-control .org-filter-select:focus {
+    color: var(--dark);
+}
+
+.org-filter-control .org-filter-select option {
+    color: var(--dark);
+    background: var(--white);
+}
+
 .org-header-tools .org-level-multi-select {
     min-height: 36px;
     padding-right: 24px;
+    text-overflow: ellipsis;
+}
+
+.org-header-tools .org-multi-select {
+    min-height: 36px;
+    padding-right: 24px;
+    text-overflow: ellipsis;
 }
 
 .org-header-tools .search-input {
@@ -734,19 +844,6 @@ body {
     padding: 0;
 }
 
-.org-tree-filter-label {
-    width: 100%;
-    margin: 0 0 16px;
-    padding: 9px 14px;
-    border-left: 4px solid var(--primary);
-    border-radius: var(--radius-md);
-    background: var(--primary-light);
-    color: var(--dark);
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
-}
-
 .org-tree--level-groups > .org-node + .org-node {
     margin-top: 19px;
     padding-top: 19px;
@@ -830,7 +927,7 @@ body {
 
 .org-card--highlight {
     border-color: var(--org-rattachement-color, var(--warning)) !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22), var(--shadow-lg);
+    box-shadow: 0 0 0 3px var(--org-rattachement-color, var(--warning)), var(--shadow-lg);
 }
 
 /* --- Carte d'un employé --- */
